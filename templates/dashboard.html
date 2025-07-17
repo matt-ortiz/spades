@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Spades Score Keeper{% endblock %}
+
+{% block subtitle %}Your games{% endblock %}
+
+{% block content %}
+<div class="text-center mb-8">
+    <a href="{{ url_for('new_game') }}" class="bg-spades-success text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors btn-animate inline-block">
+        🎯 Start New Game
+    </a>
+</div>
+
+{% if active_games %}
+<h2 class="text-xl font-bold text-gray-800 mb-4">🎮 Active Games</h2>
+{% for game in active_games %}
+<div class="spades-card rounded-lg p-4 mb-4 transition-all duration-200">
+    <div class="flex justify-between items-start mb-3">
+        <div class="font-semibold text-gray-800">
+            {{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}
+        </div>
+        <div>
+            {% if game.display_status == 'completed' %}
+                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">Complete</span>
+            {% else %}
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium">In Progress</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+        <div>
+            <strong>Team 1:</strong> {{ game.team1_final_score }} points
+            {% if game.team1_bags > 0 %}<span class="text-yellow-600">({{ game.team1_bags }} bags)</span>{% endif %}
+        </div>
+        <div>
+            <strong>Team 2:</strong> {{ game.team2_final_score }} points
+            {% if game.team2_bags > 0 %}<span class="text-yellow-600">({{ game.team2_bags }} bags)</span>{% endif %}
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate">
+            View Game
+        </a>
+        {% if game.display_status != 'completed' %}
+        <a href="{{ url_for('add_round', game_id=game.id) }}" class="bg-spades-success text-white px-4 py-2 rounded font-medium hover:bg-green-600 transition-colors btn-animate">
+            Enter Bids
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if completed_games %}
+<h2 class="text-xl font-bold text-gray-800 mb-4 mt-8">🏆 Recent Completed Games</h2>
+{% for game in completed_games %}
+<div class="spades-card rounded-lg p-4 mb-4 transition-all duration-200">
+    <div class="flex justify-between items-start mb-3">
+        <div class="font-semibold text-gray-800">
+            {{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}
+        </div>
+        <div class="text-green-600 font-semibold">{{ game.winner }} Won</div>
+    </div>
+    <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+        <div>
+            <strong>Final Score:</strong> {{ game.team1_final_score }} - {{ game.team2_final_score }}
+        </div>
+        <div>
+            <strong>Completed:</strong> {{ game.completed_date.strftime('%m/%d/%Y') }}
+        </div>
+    </div>
+    <div>
+        <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate">
+            View Game
+        </a>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if not active_games and not completed_games %}
+<div class="text-center py-12">
+    <div class="text-gray-400 text-6xl mb-4">🎴</div>
+    <h3 class="text-xl font-medium text-gray-600 mb-2">No games yet</h3>
+    <p class="text-gray-500 mb-6">Ready to start your first Spades game?</p>
+    <a href="{{ url_for('new_game') }}" class="bg-spades-success text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors btn-animate">
+        Start your first game!
+    </a>
+</div>
+{% endif %}
+{% endblock %}

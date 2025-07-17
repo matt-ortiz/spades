@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Add Round - Spades Score Keeper{% endblock %}
+
+{% block subtitle %}{{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center border border-blue-200">
+            <div class="text-sm font-medium text-blue-800 mb-2">{{ game.team1_player1 }}<br>{{ game.team1_player2 }}</div>
+            <div class="text-3xl font-bold text-blue-900">{{ game.team1_final_score }}</div>
+            {% if game.team1_bags > 0 %}
+            <div class="text-sm text-yellow-600 mt-1">{{ game.team1_bags }} bags</div>
+            {% endif %}
+        </div>
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center border border-purple-200">
+            <div class="text-sm font-medium text-purple-800 mb-2">{{ game.team2_player1 }}<br>{{ game.team2_player2 }}</div>
+            <div class="text-3xl font-bold text-purple-900">{{ game.team2_final_score }}</div>
+            {% if game.team2_bags > 0 %}
+            <div class="text-sm text-yellow-600 mt-1">{{ game.team2_bags }} bags</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<form method="POST" id="roundForm" class="space-y-6">
+    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <h3 class="text-lg font-semibold text-blue-800 mb-4">🎯 Enter Bids</h3>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Team 1 Bid</label>
+                <button type="button" class="w-full bg-white border-2 border-gray-300 rounded-lg py-3 px-4 text-left hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" onclick="openBidModal('team1')">
+                    <span id="team1_bid_display" class="text-gray-500">Select Bid</span>
+                </button>
+                <input type="hidden" id="team1_bid" name="team1_bid" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Team 2 Bid</label>
+                <button type="button" class="w-full bg-white border-2 border-gray-300 rounded-lg py-3 px-4 text-left hover:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" onclick="openBidModal('team2')">
+                    <span id="team2_bid_display" class="text-gray-500">Select Bid</span>
+                </button>
+                <input type="hidden" id="team2_bid" name="team2_bid" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+        <h3 class="text-lg font-semibold text-green-800 mb-4">📊 Enter Actual Scores</h3>
+        
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Team 1 Actual Tricks</label>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for i in range(14) %}
+                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors btn-animate" onclick="setActual('team1', {{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="team1_actual" name="team1_actual" required>
+                <div id="team1_actual_display" class="text-center mt-3 text-blue-800 font-medium"></div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Team 2 Actual Tricks</label>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for i in range(14) %}
+                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors btn-animate" onclick="setActual('team2', {{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="team2_actual" name="team2_actual" required>
+                <div id="team2_actual_display" class="text-center mt-3 text-purple-800 font-medium"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="validation_error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+            <div class="text-red-600 mr-2">⚠️</div>
+            <div class="text-red-800 font-medium">Team totals must equal 13!</div>
+        </div>
+    </div>
+
+    <button type="submit" class="w-full bg-spades-success text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-spades-success focus:ring-offset-2 transition-colors btn-animate disabled:opacity-50 disabled:cursor-not-allowed" id="submitBtn" disabled>
+        ✅ Add Round
+    </button>
+</form>
+
+<div class="text-center mt-6">
+    <a href="{{ url_for('game', game_id=game.id) }}" class="text-spades-secondary hover:text-blue-600 font-medium">← Back to Game</a>
+</div>
+
+<!-- Bid Modal -->
+<div id="bidModal" class="modal">
+    <div class="bg-white rounded-lg shadow-xl max-w-md mx-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">Select Bid</h3>
+            <button type="button" class="text-gray-400 hover:text-gray-600 text-2xl font-bold" onclick="closeBidModal()">&times;</button>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Select Number (1-13)</h4>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for i in range(1, 14) %}
+                    <button type="button" class="bg-gray-100 border border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:bg-spades-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-spades-secondary transition-colors btn-animate" onclick="selectBidNumber({{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="nilModifier" class="sr-only">
+                    <div class="w-6 h-6 bg-gray-200 rounded border-2 border-gray-300 mr-2 flex items-center justify-center">
+                        <div class="w-3 h-3 bg-spades-secondary rounded hidden"></div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700">Nil</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="blindNilModifier" class="sr-only">
+                    <div class="w-6 h-6 bg-gray-200 rounded border-2 border-gray-300 mr-2 flex items-center justify-center">
+                        <div class="w-3 h-3 bg-spades-secondary rounded hidden"></div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700">Blind Nil</span>
+                </label>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-lg font-semibold text-gray-800 mb-3" id="bidDisplay">Select a number</div>
+                <button type="button" class="w-full bg-spades-success text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-spades-success focus:ring-offset-2 transition-colors btn-animate disabled:opacity-50 disabled:cursor-not-allowed" id="confirmBid" onclick="confirmBid()" disabled>
+                    Confirm Bid
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+let currentTeam = '';
+let selectedBidNumber = 0;
+let selectedActual = {};
+
+function openBidModal(team) {
+    currentTeam = team;
+    document.getElementById('bidModal').style.display = 'flex';
+    document.getElementById('modalTitle').textContent = `Select Bid for ${team === 'team1' ? 'Team 1' : 'Team 2'}`;
+    resetBidSelection();
+}
+
+function closeBidModal() {
+    document.getElementById('bidModal').style.display = 'none';
+}
+
+function selectBidNumber(number) {
+    selectedBidNumber = number;
+    updateBidDisplay();
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.grid button').forEach(btn => {
+        if (btn.onclick && btn.onclick.toString().includes('selectBidNumber')) {
+            btn.classList.remove('bg-spades-secondary', 'text-white');
+            btn.classList.add('bg-gray-100');
+        }
+    });
+    
+    // Add active class to selected button
+    event.target.classList.remove('bg-gray-100');
+    event.target.classList.add('bg-spades-secondary', 'text-white');
+}
+
+function updateBidDisplay() {
+    const nilChecked = document.getElementById('nilModifier').checked;
+    const blindNilChecked = document.getElementById('blindNilModifier').checked;
+    
+    let display = '';
+    let bidString = '';
+    
+    if (nilChecked && blindNilChecked) {
+        display = 'Blind Nil';
+        bidString = '0bn';
+    } else if (nilChecked) {
+        display = 'Nil';
+        bidString = '0n';
+    } else if (blindNilChecked) {
+        display = `${selectedBidNumber} (Blind)`;
+        bidString = `${selectedBidNumber}b`;
+    } else {
+        display = selectedBidNumber.toString();
+        bidString = selectedBidNumber.toString();
+    }
+    
+    document.getElementById('bidDisplay').textContent = display;
+    document.getElementById('confirmBid').disabled = selectedBidNumber === 0;
+    
+    return bidString;
+}
+
+function confirmBid() {
+    const bidString = updateBidDisplay();
+    const display = document.getElementById('bidDisplay').textContent;
+    
+    document.getElementById(`${currentTeam}_bid`).value = bidString;
+    const displayElement = document.getElementById(`${currentTeam}_bid_display`);
+    displayElement.textContent = display;
+    displayElement.classList.remove('text-gray-500');
+    displayElement.classList.add('text-gray-800', 'font-medium');
+    
+    closeBidModal();
+    checkFormValidity();
+}
+
+function resetBidSelection() {
+    selectedBidNumber = 0;
+    document.getElementById('nilModifier').checked = false;
+    document.getElementById('blindNilModifier').checked = false;
+    document.getElementById('bidDisplay').textContent = 'Select a number';
+    document.getElementById('confirmBid').disabled = true;
+    
+    // Reset button styles
+    document.querySelectorAll('.grid button').forEach(btn => {
+        if (btn.onclick && btn.onclick.toString().includes('selectBidNumber')) {
+            btn.classList.remove('bg-spades-secondary', 'text-white');
+            btn.classList.add('bg-gray-100');
+        }
+    });
+}
+
+function setActual(team, value) {
+    selectedActual[team] = value;
+    document.getElementById(`${team}_actual`).value = value;
+    document.getElementById(`${team}_actual_display`).textContent = `${value} tricks`;
+    
+    // Update button styles
+    const buttons = document.querySelectorAll(`button[onclick*="setActual('${team}'"]`);
+    buttons.forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'bg-purple-100', 'border-blue-500', 'border-purple-500');
+        btn.classList.add('bg-white', 'border-gray-300');
+    });
+    
+    event.target.classList.remove('bg-white', 'border-gray-300');
+    if (team === 'team1') {
+        event.target.classList.add('bg-blue-100', 'border-blue-500');
+    } else {
+        event.target.classList.add('bg-purple-100', 'border-purple-500');
+    }
+    
+    checkFormValidity();
+}
+
+function checkFormValidity() {
+    const team1Bid = document.getElementById('team1_bid').value;
+    const team2Bid = document.getElementById('team2_bid').value;
+    const team1Actual = selectedActual.team1;
+    const team2Actual = selectedActual.team2;
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const validationError = document.getElementById('validation_error');
+    
+    // Check if all fields are filled
+    if (team1Bid && team2Bid && team1Actual !== undefined && team2Actual !== undefined) {
+        // Check if totals equal 13
+        if (team1Actual + team2Actual === 13) {
+            submitBtn.disabled = false;
+            validationError.classList.add('hidden');
+        } else {
+            submitBtn.disabled = true;
+            validationError.classList.remove('hidden');
+        }
+    } else {
+        submitBtn.disabled = true;
+        validationError.classList.add('hidden');
+    }
+}
+
+// Event listeners for modal checkboxes
+document.getElementById('nilModifier').addEventListener('change', function() {
+    const checkbox = this;
+    const indicator = checkbox.nextElementSibling.querySelector('div');
+    
+    if (checkbox.checked) {
+        indicator.classList.remove('hidden');
+    } else {
+        indicator.classList.add('hidden');
+    }
+    
+    updateBidDisplay();
+});
+
+document.getElementById('blindNilModifier').addEventListener('change', function() {
+    const checkbox = this;
+    const indicator = checkbox.nextElementSibling.querySelector('div');
+    
+    if (checkbox.checked) {
+        indicator.classList.remove('hidden');
+    } else {
+        indicator.classList.add('hidden');
+    }
+    
+    updateBidDisplay();
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('bidModal');
+    if (event.target === modal) {
+        closeBidModal();
+    }
+}
+</script>
+{% endblock %}

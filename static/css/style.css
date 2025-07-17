@@ -1,0 +1,78 @@
+/* Custom styles to supplement Tailwind CSS */
+
+/* Custom color scheme */
+:root {
+    --spades-primary: #1e293b;
+    --spades-secondary: #3b82f6;
+    --spades-success: #10b981;
+    --spades-warning: #f59e0b;
+    --spades-danger: #ef4444;
+}
+
+/* Modal styles (since Tailwind doesn't include modal by default) */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Spades-specific styling */
+.spades-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid #cbd5e1;
+}
+
+.spades-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Touch improvements for mobile */
+@media (max-width: 768px) {
+    .btn-grid {
+        gap: 0.5rem;
+    }
+    
+    .btn-grid button {
+        min-height: 60px;
+        font-size: 1.125rem;
+    }
+}
+
+/* Custom button animations */
+.btn-animate {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-animate:hover {
+    transform: translateY(-1px);
+}
+
+.btn-animate:active {
+    transform: translateY(0);
+}
+
+/* Pulse animation for active states */
+.pulse-green {
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+}

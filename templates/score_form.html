@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Scores - Spades Score Keeper{% endblock %}
+
+{% block subtitle %}{{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}{% endblock %}
+
+{% block datetime %}{{ game.created_date | datetime }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center border border-blue-200">
+            <div class="text-sm font-medium text-blue-800 mb-2">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
+            <div class="text-3xl font-bold text-blue-900">{{ game.team1_final_score }}</div>
+            {% if game.team1_bags > 0 %}
+            <div class="text-sm text-yellow-600 mt-1">{{ game.team1_bags }} bags</div>
+            {% endif %}
+        </div>
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center border border-purple-200">
+            <div class="text-sm font-medium text-purple-800 mb-2">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
+            <div class="text-3xl font-bold text-purple-900">{{ game.team2_final_score }}</div>
+            {% if game.team2_bags > 0 %}
+            <div class="text-sm text-yellow-600 mt-1">{{ game.team2_bags }} bags</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <h3 class="font-semibold text-blue-800 mb-3">📋 Round {{ round.round_number }} - Bids Entered</h3>
+    <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
+            <div class="text-sm font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }} Bid</div>
+            <div class="text-lg font-bold text-blue-900">{{ round.team1_bid }}</div>
+        </div>
+        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+            <div class="text-sm font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }} Bid</div>
+            <div class="text-lg font-bold text-purple-900">{{ round.team2_bid }}</div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" id="scoreForm" class="space-y-6">
+    <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+        <h3 class="text-lg font-semibold text-green-800 mb-4">📊 Enter Actual Scores</h3>
+        
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }} Actual Tricks</label>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for i in range(14) %}
+                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors btn-animate" onclick="setActual('team1', {{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="team1_actual" name="team1_actual" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }} Actual Tricks</label>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for i in range(14) %}
+                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors btn-animate" onclick="setActual('team2', {{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="team2_actual" name="team2_actual" required>
+            </div>
+        </div>
+    </div>
+
+    <div id="validation_error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+            <div class="text-red-600 mr-2">⚠️</div>
+            <div class="text-red-800 font-medium">Team totals must equal 13!</div>
+        </div>
+    </div>
+
+    <div id="score_preview" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h4 class="font-semibold text-gray-800 mb-3">📊 Round Score Preview</h4>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
+                <div class="text-blue-700 mb-1">Bid: {{ round.team1_bid }} | Made: <span id="team1_made_display"></span></div>
+                <div id="team1_score_preview" class="text-lg font-bold text-blue-900"></div>
+            </div>
+            <div class="bg-purple-50 p-3 rounded border border-purple-200">
+                <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
+                <div class="text-purple-700 mb-1">Bid: {{ round.team2_bid }} | Made: <span id="team2_made_display"></span></div>
+                <div id="team2_score_preview" class="text-lg font-bold text-purple-900"></div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="w-full bg-spades-success text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-spades-success focus:ring-offset-2 transition-colors btn-animate disabled:opacity-50 disabled:cursor-not-allowed" id="submitBtn" disabled>
+        ✅ Complete Round
+    </button>
+</form>
+
+<div class="text-center mt-6">
+    <a href="{{ url_for('game', game_id=game.id) }}" class="text-spades-secondary hover:text-blue-600 font-medium">← Back to Game</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+let selectedActual = {};
+
+function setActual(team, value) {
+    selectedActual[team] = value;
+    document.getElementById(`${team}_actual`).value = value;
+    
+    // Update button styles
+    const buttons = document.querySelectorAll(`button[onclick*="setActual('${team}'"]`);
+    buttons.forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'bg-purple-100', 'border-blue-500', 'border-purple-500');
+        btn.classList.add('bg-white', 'border-gray-300');
+    });
+    
+    event.target.classList.remove('bg-white', 'border-gray-300');
+    if (team === 'team1') {
+        event.target.classList.add('bg-blue-100', 'border-blue-500');
+    } else {
+        event.target.classList.add('bg-purple-100', 'border-purple-500');
+    }
+    
+    checkFormValidity();
+}
+
+function checkFormValidity() {
+    const team1Actual = selectedActual.team1;
+    const team2Actual = selectedActual.team2;
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const validationError = document.getElementById('validation_error');
+    const scorePreview = document.getElementById('score_preview');
+    
+    // Check if all fields are filled
+    if (team1Actual !== undefined && team2Actual !== undefined) {
+        // Check if totals equal 13
+        if (team1Actual + team2Actual === 13) {
+            submitBtn.disabled = false;
+            validationError.classList.add('hidden');
+            scorePreview.classList.remove('hidden');
+            
+            // Update preview
+            updateScorePreview();
+        } else {
+            submitBtn.disabled = true;
+            validationError.classList.remove('hidden');
+            scorePreview.classList.add('hidden');
+        }
+    } else {
+        submitBtn.disabled = true;
+        validationError.classList.add('hidden');
+        scorePreview.classList.add('hidden');
+    }
+}
+
+function updateScorePreview() {
+    const team1Bid = '{{ round.team1_bid }}';
+    const team2Bid = '{{ round.team2_bid }}';
+    const team1Actual = selectedActual.team1;
+    const team2Actual = selectedActual.team2;
+    
+    // Update made displays
+    document.getElementById('team1_made_display').textContent = team1Actual;
+    document.getElementById('team2_made_display').textContent = team2Actual;
+    
+    // Calculate actual round points
+    const team1Score = calculateRoundScore(team1Bid, team1Actual);
+    const team2Score = calculateRoundScore(team2Bid, team2Actual);
+    
+    // Display scores with positive/negative indicators
+    document.getElementById('team1_score_preview').textContent = team1Score >= 0 ? `+${team1Score}` : `${team1Score}`;
+    document.getElementById('team2_score_preview').textContent = team2Score >= 0 ? `+${team2Score}` : `${team2Score}`;
+    
+    // Color coding for positive/negative scores
+    const team1Element = document.getElementById('team1_score_preview');
+    const team2Element = document.getElementById('team2_score_preview');
+    
+    team1Element.className = team1Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+    team2Element.className = team2Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+}
+
+function getBidValue(bidString) {
+    if (bidString.endsWith('bn') || bidString.endsWith('n')) {
+        return 0;
+    } else if (bidString.endsWith('b')) {
+        return parseInt(bidString.slice(0, -1));
+    } else {
+        return parseInt(bidString);
+    }
+}
+
+function calculateRoundScore(bidString, actual) {
+    const isNil = bidString.endsWith('n');
+    const isBlindNil = bidString.endsWith('bn');
+    const isBlind = bidString.endsWith('b') && !isBlindNil;
+    
+    if (isBlindNil) {
+        // Blind Nil: +200 if made (0 tricks), -200 if failed
+        return actual === 0 ? 200 : -200;
+    } else if (isNil) {
+        // Nil: +100 if made (0 tricks), -100 if failed
+        return actual === 0 ? 100 : -100;
+    } else {
+        const bidValue = getBidValue(bidString);
+        const baseScore = bidValue * 10;
+        
+        if (actual >= bidValue) {
+            // Made the bid: base score + bags
+            const bags = actual - bidValue;
+            return baseScore + bags;
+        } else {
+            // Failed the bid: negative base score
+            return -baseScore;
+        }
+    }
+}
+</script>
+{% endblock %}
