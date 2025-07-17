@@ -18,9 +18,27 @@ init_db()
 def datetime_filter(date_string):
     if date_string:
         try:
-            # Parse the datetime string from SQLite
-            dt = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+            # Handle datetime strings with microseconds
+            if '.' in date_string:
+                dt = datetime.strptime(date_string.split('.')[0], '%Y-%m-%d %H:%M:%S')
+            else:
+                dt = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
             return dt.strftime('%B %d, %Y at %I:%M %p')
+        except:
+            return date_string
+    return ''
+
+# Template filter for simpler datetime formatting
+@app.template_filter('simple_datetime')
+def simple_datetime_filter(date_string):
+    if date_string:
+        try:
+            # Handle datetime strings with microseconds
+            if '.' in date_string:
+                dt = datetime.strptime(date_string.split('.')[0], '%Y-%m-%d %H:%M:%S')
+            else:
+                dt = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+            return dt.strftime('%m/%d/%Y at %I:%M %p')
         except:
             return date_string
     return ''
@@ -349,7 +367,10 @@ def enter_scores(game_id):
         
         # Check for game completion
         if team1_total >= game['max_score'] or team2_total >= game['max_score']:
-            winner = 'Team 1' if team1_total >= game['max_score'] else 'Team 2'
+            if team1_total >= game['max_score']:
+                winner = f"{game['team1_player1']} & {game['team1_player2']}"
+            else:
+                winner = f"{game['team2_player1']} & {game['team2_player2']}"
             conn.execute('''
                 UPDATE games SET status = 'completed', winner = ?, completed_date = ?
                 WHERE id = ?

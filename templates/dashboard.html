@@ -55,18 +55,26 @@
 <h2 class="text-xl font-bold text-gray-800 mb-4 mt-8">🏆 Recent Completed Games</h2>
 {% for game in completed_games %}
 <div class="spades-card rounded-lg p-4 mb-4 transition-all duration-200">
-    <div class="flex justify-between items-start mb-3">
+    <div class="flex justify-between items-center mb-3">
         <div class="font-semibold text-gray-800">
             {{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}
         </div>
-        <div class="text-green-600 font-semibold">{{ game.winner }} Won</div>
-    </div>
-    <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-        <div>
-            <strong>Final Score:</strong> {{ game.team1_final_score }} - {{ game.team2_final_score }}
+        <div class="text-green-600 font-semibold">
+            {% if game.winner == 'Team 1' %}
+                {{ game.team1_player1 }}/{{ game.team1_player2 }} Won
+            {% elif game.winner == 'Team 2' %}
+                {{ game.team2_player1 }}/{{ game.team2_player2 }} Won
+            {% else %}
+                {{ game.winner }} Won
+            {% endif %}
         </div>
-        <div>
-            <strong>Completed:</strong> {{ game.completed_date.strftime('%m/%d/%Y') }}
+    </div>
+    <div class="flex justify-between items-center mb-4">
+        <div class="text-lg font-bold text-gray-900">
+            {{ game.team1_final_score }} - {{ game.team2_final_score }}
+        </div>
+        <div class="text-sm text-gray-600">
+            {{ game.completed_date | simple_datetime }}
         </div>
     </div>
     <div>

@@ -4,7 +4,8 @@
       "Bash(mkdir:*)",
       "Bash(source:*)",
       "Bash(python:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": []
   }

@@ -139,18 +139,23 @@ function updateTeamBid(team) {
     let display = '';
     let bidString = '';
     
-    if (nilChecked && blindNilChecked) {
-        display = 'Blind Nil';
-        bidString = '0bn';
-    } else if (nilChecked) {
-        display = 'Nil';
-        bidString = '0n';
-    } else if (blindNilChecked) {
-        display = `${selectedNumber} (Blind)`;
-        bidString = `${selectedNumber}b`;
+    if (selectedNumber > 0) {
+        if (nilChecked && blindNilChecked) {
+            display = 'Blind Nil';
+            bidString = `${selectedNumber}bn`;
+        } else if (nilChecked) {
+            display = 'Nil';
+            bidString = `${selectedNumber}n`;
+        } else if (blindNilChecked) {
+            display = `${selectedNumber} (Blind)`;
+            bidString = `${selectedNumber}b`;
+        } else {
+            display = selectedNumber.toString();
+            bidString = selectedNumber.toString();
+        }
     } else {
-        display = selectedNumber > 0 ? selectedNumber.toString() : 'Select a number';
-        bidString = selectedNumber > 0 ? selectedNumber.toString() : '';
+        display = 'Select a number';
+        bidString = '';
     }
     
     document.getElementById(`${team}_bid`).value = bidString;

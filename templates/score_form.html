@@ -9,27 +9,15 @@
 {% block content %}
 {{ team_scores(game) }}
 
-<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-    <h3 class="font-semibold text-blue-800 mb-3">📋 Round {{ round.round_number }} - Bids Entered</h3>
-    <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
-            <div class="text-sm font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }} Bid</div>
-            <div class="text-lg font-bold text-blue-900">{{ round.team1_bid }}</div>
-        </div>
-        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
-            <div class="text-sm font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }} Bid</div>
-            <div class="text-lg font-bold text-purple-900">{{ round.team2_bid }}</div>
-        </div>
-    </div>
+<div class="mb-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Round {{ round.round_number }}: Enter Tricks Taken</h3>
 </div>
 
 <form method="POST" id="scoreForm" class="space-y-6">
     <div class="bg-green-50 rounded-lg p-4 border border-green-200">
-        <h3 class="text-lg font-semibold text-green-800 mb-4">📊 Enter Actual Scores</h3>
-        
         <div class="space-y-6">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }} Actual Tricks</label>
+                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }} [Bid: {{ round.team1_bid }}]</label>
                 <div class="grid grid-cols-7 gap-2">
                     {% for i in range(14) %}
                     <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors btn-animate" onclick="setActual('team1', {{ i }})">
@@ -41,7 +29,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }} Actual Tricks</label>
+                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }} [Bid: {{ round.team2_bid }}]</label>
                 <div class="grid grid-cols-7 gap-2">
                     {% for i in range(14) %}
                     <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors btn-animate" onclick="setActual('team2', {{ i }})">
@@ -61,18 +49,18 @@
         </div>
     </div>
 
-    <div id="score_preview" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-4">
+    <div id="score_preview" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <h4 class="font-semibold text-gray-800 mb-3">📊 Round Score Preview</h4>
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="bg-blue-50 p-3 rounded border border-blue-200">
                 <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
-                <div class="text-blue-700 mb-1">Bid: {{ round.team1_bid }} | Made: <span id="team1_made_display"></span></div>
-                <div id="team1_score_preview" class="text-lg font-bold text-blue-900"></div>
+                <div class="text-blue-700 mb-1">Bid: {{ round.team1_bid }} | Made: <span id="team1_made_display">-</span></div>
+                <div id="team1_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
             </div>
             <div class="bg-purple-50 p-3 rounded border border-purple-200">
                 <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
-                <div class="text-purple-700 mb-1">Bid: {{ round.team2_bid }} | Made: <span id="team2_made_display"></span></div>
-                <div id="team2_score_preview" class="text-lg font-bold text-purple-900"></div>
+                <div class="text-purple-700 mb-1">Bid: {{ round.team2_bid }} | Made: <span id="team2_made_display">-</span></div>
+                <div id="team2_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
             </div>
         </div>
     </div>
@@ -143,7 +131,9 @@ function checkFormValidity() {
     
     const submitBtn = document.getElementById('submitBtn');
     const validationError = document.getElementById('validation_error');
-    const scorePreview = document.getElementById('score_preview');
+    
+    // Always update preview when either team has a selection
+    updateScorePreview();
     
     // Check if all fields are filled
     if (team1Actual !== undefined && team2Actual !== undefined) {
@@ -151,22 +141,16 @@ function checkFormValidity() {
         if (team1Actual + team2Actual === 13) {
             submitBtn.disabled = false;
             validationError.classList.add('hidden');
-            scorePreview.classList.remove('hidden');
             
             // Clear any remaining highlights since both teams are selected
             clearAllHighlights();
-            
-            // Update preview
-            updateScorePreview();
         } else {
             submitBtn.disabled = true;
             validationError.classList.remove('hidden');
-            scorePreview.classList.add('hidden');
         }
     } else {
         submitBtn.disabled = true;
         validationError.classList.add('hidden');
-        scorePreview.classList.add('hidden');
     }
 }
 
@@ -184,23 +168,30 @@ function updateScorePreview() {
     const team2Actual = selectedActual.team2;
     
     // Update made displays
-    document.getElementById('team1_made_display').textContent = team1Actual;
-    document.getElementById('team2_made_display').textContent = team2Actual;
+    document.getElementById('team1_made_display').textContent = team1Actual !== undefined ? team1Actual : '-';
+    document.getElementById('team2_made_display').textContent = team2Actual !== undefined ? team2Actual : '-';
     
-    // Calculate actual round points
-    const team1Score = calculateRoundScore(team1Bid, team1Actual);
-    const team2Score = calculateRoundScore(team2Bid, team2Actual);
-    
-    // Display scores with positive/negative indicators
-    document.getElementById('team1_score_preview').textContent = team1Score >= 0 ? `+${team1Score}` : `${team1Score}`;
-    document.getElementById('team2_score_preview').textContent = team2Score >= 0 ? `+${team2Score}` : `${team2Score}`;
-    
-    // Color coding for positive/negative scores
+    // Update Team 1 score preview
     const team1Element = document.getElementById('team1_score_preview');
-    const team2Element = document.getElementById('team2_score_preview');
+    if (team1Actual !== undefined) {
+        const team1Score = calculateRoundScore(team1Bid, team1Actual);
+        team1Element.textContent = team1Score >= 0 ? `+${team1Score}` : `${team1Score}`;
+        team1Element.className = team1Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+    } else {
+        team1Element.textContent = 'Select tricks';
+        team1Element.className = 'text-lg font-bold text-gray-400';
+    }
     
-    team1Element.className = team1Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
-    team2Element.className = team2Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+    // Update Team 2 score preview
+    const team2Element = document.getElementById('team2_score_preview');
+    if (team2Actual !== undefined) {
+        const team2Score = calculateRoundScore(team2Bid, team2Actual);
+        team2Element.textContent = team2Score >= 0 ? `+${team2Score}` : `${team2Score}`;
+        team2Element.className = team2Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+    } else {
+        team2Element.textContent = 'Select tricks';
+        team2Element.className = 'text-lg font-bold text-gray-400';
+    }
 }
 
 function getBidValue(bidString) {
