@@ -7,24 +7,7 @@
 {% block datetime %}{{ game.created_date | datetime }}{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center border border-blue-200">
-            <div class="text-sm font-medium text-blue-800 mb-2">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
-            <div class="text-3xl font-bold text-blue-900">{{ game.team1_final_score }}</div>
-            {% if game.team1_bags > 0 %}
-            <div class="text-sm text-yellow-600 mt-1">{{ game.team1_bags }} bags</div>
-            {% endif %}
-        </div>
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center border border-purple-200">
-            <div class="text-sm font-medium text-purple-800 mb-2">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
-            <div class="text-3xl font-bold text-purple-900">{{ game.team2_final_score }}</div>
-            {% if game.team2_bags > 0 %}
-            <div class="text-sm text-yellow-600 mt-1">{{ game.team2_bags }} bags</div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+{{ team_scores(game) }}
 
 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
     <h3 class="font-semibold text-blue-800 mb-3">📋 Round {{ round.round_number }} - Bids Entered</h3>
@@ -114,7 +97,7 @@ function setActual(team, value) {
     selectedActual[team] = value;
     document.getElementById(`${team}_actual`).value = value;
     
-    // Update button styles
+    // Update button styles for selected team
     const buttons = document.querySelectorAll(`button[onclick*="setActual('${team}'"]`);
     buttons.forEach(btn => {
         btn.classList.remove('bg-blue-100', 'bg-purple-100', 'border-blue-500', 'border-purple-500');
@@ -128,7 +111,30 @@ function setActual(team, value) {
         event.target.classList.add('bg-purple-100', 'border-purple-500');
     }
     
+    // Auto-highlight the corresponding value for the other team
+    highlightComplementaryScore(team, value);
+    
     checkFormValidity();
+}
+
+function highlightComplementaryScore(selectedTeam, selectedValue) {
+    const otherTeam = selectedTeam === 'team1' ? 'team2' : 'team1';
+    const complementaryValue = 13 - selectedValue;
+    
+    // Clear previous highlights for the other team
+    const otherButtons = document.querySelectorAll(`button[onclick*="setActual('${otherTeam}'"]`);
+    otherButtons.forEach(btn => {
+        btn.classList.remove('bg-yellow-100', 'border-yellow-400', 'ring-2', 'ring-yellow-300');
+    });
+    
+    // Only highlight if the complementary value is valid (0-13)
+    if (complementaryValue >= 0 && complementaryValue <= 13) {
+        // Find and highlight the complementary button
+        const complementaryButton = document.querySelector(`button[onclick="setActual('${otherTeam}', ${complementaryValue})"]`);
+        if (complementaryButton) {
+            complementaryButton.classList.add('bg-yellow-100', 'border-yellow-400', 'ring-2', 'ring-yellow-300');
+        }
+    }
 }
 
 function checkFormValidity() {
@@ -147,6 +153,9 @@ function checkFormValidity() {
             validationError.classList.add('hidden');
             scorePreview.classList.remove('hidden');
             
+            // Clear any remaining highlights since both teams are selected
+            clearAllHighlights();
+            
             // Update preview
             updateScorePreview();
         } else {
@@ -159,6 +168,13 @@ function checkFormValidity() {
         validationError.classList.add('hidden');
         scorePreview.classList.add('hidden');
     }
+}
+
+function clearAllHighlights() {
+    const allButtons = document.querySelectorAll('button[onclick*="setActual"]');
+    allButtons.forEach(btn => {
+        btn.classList.remove('bg-yellow-100', 'border-yellow-400', 'ring-2', 'ring-yellow-300');
+    });
 }
 
 function updateScorePreview() {

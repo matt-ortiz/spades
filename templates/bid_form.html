@@ -7,24 +7,7 @@
 {% block datetime %}{{ game.created_date | datetime }}{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-2 text-center border border-blue-200">
-            <div class="text-xs font-medium text-blue-800">{{ game.team1_player1 }}<br>{{ game.team1_player2 }}</div>
-            <div class="text-lg font-bold text-blue-900">{{ game.team1_final_score }}</div>
-            {% if game.team1_bags > 0 %}
-            <div class="text-xs text-yellow-600">{{ game.team1_bags }} bags</div>
-            {% endif %}
-        </div>
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-2 text-center border border-purple-200">
-            <div class="text-xs font-medium text-purple-800">{{ game.team2_player1 }}<br>{{ game.team2_player2 }}</div>
-            <div class="text-lg font-bold text-purple-900">{{ game.team2_final_score }}</div>
-            {% if game.team2_bags > 0 %}
-            <div class="text-xs text-yellow-600">{{ game.team2_bags }} bags</div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+{{ team_scores(game) }}
 
 <div class="mb-4">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">🎯 Round {{ round_number }} - Enter Bids</h3>

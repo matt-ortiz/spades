@@ -25,6 +25,27 @@
         </div>
     </div>
 
+    <!-- Total Differential Display -->
+    {% if game.team1_final_score != game.team2_final_score %}
+    <div class="text-center mb-6">
+        <div class="inline-block bg-gray-100 rounded-full px-4 py-2 text-sm font-medium text-gray-700">
+            {% if game.team1_final_score > game.team2_final_score %}
+            <span class="text-blue-600">{{ game.team1_player1 }}/{{ game.team1_player2 }}</span> leads by 
+            <span class="font-bold text-blue-800">{{ game.team1_final_score - game.team2_final_score }}</span> points
+            {% else %}
+            <span class="text-purple-600">{{ game.team2_player1 }}/{{ game.team2_player2 }}</span> leads by 
+            <span class="font-bold text-purple-800">{{ game.team2_final_score - game.team1_final_score }}</span> points
+            {% endif %}
+        </div>
+    </div>
+    {% elif game.team1_final_score == game.team2_final_score and game.team1_final_score > 0 %}
+    <div class="text-center mb-6">
+        <div class="inline-block bg-gray-100 rounded-full px-4 py-2 text-sm font-medium text-gray-700">
+            Game is tied at {{ game.team1_final_score }} points
+        </div>
+    </div>
+    {% endif %}
+
     {% if game.status == 'completed' %}
     <div class="text-center py-6 bg-green-50 rounded-lg border border-green-200">
         <h2 class="text-2xl font-bold text-green-800 mb-2">🏆 {{ game.winner }} Wins!</h2>
@@ -77,19 +98,33 @@
         </div>
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="bg-blue-50 p-3 rounded border border-blue-200">
-                <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
-                <div class="text-blue-700">Bid {{ round.team1_bid }}, Made {{ round.team1_actual }}</div>
-                <div class="text-blue-700"><strong>Points:</strong> {{ round.team1_points }} (Total: {{ round.team1_total }})</div>
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-blue-700">Bid {{ round.team1_bid }}</span>
+                    <span class="text-blue-700">Made {{ round.team1_actual }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-bold {{ 'text-green-600' if round.team1_points > 0 else 'text-red-600' if round.team1_points < 0 else 'text-blue-900' }}">
+                        {{ '+' if round.team1_points > 0 else '' }}{{ round.team1_points }}
+                    </div>
+                    <span class="text-xs text-blue-700">Total {{ round.team1_total }}</span>
+                </div>
                 {% if round.team1_bags_earned > 0 %}
-                <div class="text-yellow-600"><strong>Bags:</strong> +{{ round.team1_bags_earned }} (Total: {{ round.team1_bags_total }})</div>
+                <div class="text-xs text-yellow-600 mt-1">+{{ round.team1_bags_earned }} bags</div>
                 {% endif %}
             </div>
             <div class="bg-purple-50 p-3 rounded border border-purple-200">
-                <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
-                <div class="text-purple-700">Bid {{ round.team2_bid }}, Made {{ round.team2_actual }}</div>
-                <div class="text-purple-700"><strong>Points:</strong> {{ round.team2_points }} (Total: {{ round.team2_total }})</div>
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-purple-700">Bid {{ round.team2_bid }}</span>
+                    <span class="text-purple-700">Made {{ round.team2_actual }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-bold {{ 'text-green-600' if round.team2_points > 0 else 'text-red-600' if round.team2_points < 0 else 'text-purple-900' }}">
+                        {{ '+' if round.team2_points > 0 else '' }}{{ round.team2_points }}
+                    </div>
+                    <span class="text-xs text-purple-700">Total {{ round.team2_total }}</span>
+                </div>
                 {% if round.team2_bags_earned > 0 %}
-                <div class="text-yellow-600"><strong>Bags:</strong> +{{ round.team2_bags_earned }} (Total: {{ round.team2_bags_total }})</div>
+                <div class="text-xs text-yellow-600 mt-1">+{{ round.team2_bags_earned }} bags</div>
                 {% endif %}
             </div>
         </div>

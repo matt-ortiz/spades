@@ -1,3 +1,25 @@
+{# Team Scores Component Macro #}
+{% macro team_scores(game) %}
+<div class="mb-4">
+    <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-2 text-center border border-blue-200">
+            <div class="text-xs font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
+            <div class="text-lg font-bold text-blue-900">{{ game.team1_final_score }}</div>
+            {% if game.team1_bags > 0 %}
+            <!-- <div class="text-xs text-yellow-600">{{ game.team1_bags }} bags</div>-->
+            {% endif %}
+        </div>
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-2 text-center border border-purple-200">
+            <div class="text-xs font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
+            <div class="text-lg font-bold text-purple-900">{{ game.team2_final_score }}</div>
+            {% if game.team2_bags > 0 %}
+            <!-- <div class="text-xs text-yellow-600">{{ game.team2_bags }} bags</div>-->
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,7 +84,7 @@
                 {% with messages = get_flashed_messages() %}
                     {% if messages %}
                         {% for message in messages %}
-                            <div class="mb-4 p-4 rounded-md {% if 'success' in message.lower() %}bg-green-50 text-green-800 border border-green-200{% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
+                            <div class="flash-message mb-4 p-4 rounded-md {% if 'success' in message.lower() %}bg-green-50 text-green-800 border border-green-200{% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
                                 {{ message }}
                             </div>
                         {% endfor %}
@@ -89,6 +111,20 @@
             if (!button || !button.onclick || button.onclick.toString().indexOf('toggleDropdown') === -1) {
                 dropdown.classList.add('hidden');
             }
+        });
+        
+        // Auto-dismiss flash messages after 4 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.transition = 'opacity 0.5s ease-out';
+                    message.style.opacity = '0';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500);
+                }, 4000);
+            });
         });
     </script>
     {% endblock %}
