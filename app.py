@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import secrets
 from models import init_db, get_db_connection
 from auth import send_security_code, verify_security_code, require_login
-from scoring import calculate_round_points, parse_bid
+from scoring import calculate_round_points, calculate_round_points_with_flags, parse_bid, format_bid_display
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -42,6 +42,11 @@ def simple_datetime_filter(date_string):
         except:
             return date_string
     return ''
+
+# Template filter for bid display formatting
+@app.template_filter('format_bid_display')
+def format_bid_display_filter(bid_string):
+    return format_bid_display(bid_string)
 
 @app.route('/')
 @require_login
@@ -307,9 +312,24 @@ def enter_scores(game_id):
             conn.close()
             return render_template('score_form.html', game=game, round=pending_round)
         
-        # Calculate points
-        team1_points = calculate_round_points(pending_round['team1_bid'], team1_actual, game)
-        team2_points = calculate_round_points(pending_round['team2_bid'], team2_actual, game)
+        # Get special bid success flags
+        team1_nil_success = request.form.get('team1_nil_success') == 'on'
+        team1_blind_nil_success = request.form.get('team1_blind_nil_success') == 'on'
+        team1_blind_success = request.form.get('team1_blind_success') == 'on'
+        
+        team2_nil_success = request.form.get('team2_nil_success') == 'on'
+        team2_blind_nil_success = request.form.get('team2_blind_nil_success') == 'on'
+        team2_blind_success = request.form.get('team2_blind_success') == 'on'
+        
+        # Calculate points using the new function with success flags
+        team1_points = calculate_round_points_with_flags(
+            pending_round['team1_bid'], team1_actual, game,
+            team1_nil_success, team1_blind_nil_success, team1_blind_success
+        )
+        team2_points = calculate_round_points_with_flags(
+            pending_round['team2_bid'], team2_actual, game,
+            team2_nil_success, team2_blind_nil_success, team2_blind_success
+        )
         
         # Get current totals
         last_completed_round = conn.execute('''

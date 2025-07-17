@@ -17,7 +17,7 @@
     <div class="bg-green-50 rounded-lg p-4 border border-green-200">
         <div class="space-y-6">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }} [Bid: {{ round.team1_bid }}]</label>
+                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }} [Bid: {{ round.team1_bid | format_bid_display }}]</label>
                 <div class="grid grid-cols-7 gap-2">
                     {% for i in range(14) %}
                     <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors btn-animate" onclick="setActual('team1', {{ i }})">
@@ -26,10 +26,31 @@
                     {% endfor %}
                 </div>
                 <input type="hidden" id="team1_actual" name="team1_actual" required>
+                
+                <!-- Special bid success/failure toggles -->
+                <div id="team1_special_bids" class="mt-4 space-y-2" style="display: none;">
+                    <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                        <div class="text-sm font-medium text-blue-800 mb-2">Special Bid Status:</div>
+                        <div class="space-y-2">
+                            <label class="flex items-center cursor-pointer" id="team1_nil_toggle" style="display: none;">
+                                <input type="checkbox" id="team1_nil_success" name="team1_nil_success" class="mr-2">
+                                <span class="text-sm text-gray-700">Nil successful</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer" id="team1_blind_nil_toggle" style="display: none;">
+                                <input type="checkbox" id="team1_blind_nil_success" name="team1_blind_nil_success" class="mr-2">
+                                <span class="text-sm text-gray-700">Blind Nil successful</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer" id="team1_blind_toggle" style="display: none;">
+                                <input type="checkbox" id="team1_blind_success" name="team1_blind_success" class="mr-2">
+                                <span class="text-sm text-gray-700">Blind bid successful</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }} [Bid: {{ round.team2_bid }}]</label>
+                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }} [Bid: {{ round.team2_bid | format_bid_display }}]</label>
                 <div class="grid grid-cols-7 gap-2">
                     {% for i in range(14) %}
                     <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors btn-animate" onclick="setActual('team2', {{ i }})">
@@ -38,6 +59,27 @@
                     {% endfor %}
                 </div>
                 <input type="hidden" id="team2_actual" name="team2_actual" required>
+                
+                <!-- Special bid success/failure toggles -->
+                <div id="team2_special_bids" class="mt-4 space-y-2" style="display: none;">
+                    <div class="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                        <div class="text-sm font-medium text-purple-800 mb-2">Special Bid Status:</div>
+                        <div class="space-y-2">
+                            <label class="flex items-center cursor-pointer" id="team2_nil_toggle" style="display: none;">
+                                <input type="checkbox" id="team2_nil_success" name="team2_nil_success" class="mr-2">
+                                <span class="text-sm text-gray-700">Nil successful</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer" id="team2_blind_nil_toggle" style="display: none;">
+                                <input type="checkbox" id="team2_blind_nil_success" name="team2_blind_nil_success" class="mr-2">
+                                <span class="text-sm text-gray-700">Blind Nil successful</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer" id="team2_blind_toggle" style="display: none;">
+                                <input type="checkbox" id="team2_blind_success" name="team2_blind_success" class="mr-2">
+                                <span class="text-sm text-gray-700">Blind bid successful</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -54,12 +96,12 @@
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="bg-blue-50 p-3 rounded border border-blue-200">
                 <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
-                <div class="text-blue-700 mb-1">Bid: {{ round.team1_bid }} | Made: <span id="team1_made_display">-</span></div>
+                <div class="text-blue-700 mb-1">Bid: {{ round.team1_bid | format_bid_display }} | Made: <span id="team1_made_display">-</span></div>
                 <div id="team1_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
             </div>
             <div class="bg-purple-50 p-3 rounded border border-purple-200">
                 <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
-                <div class="text-purple-700 mb-1">Bid: {{ round.team2_bid }} | Made: <span id="team2_made_display">-</span></div>
+                <div class="text-purple-700 mb-1">Bid: {{ round.team2_bid | format_bid_display }} | Made: <span id="team2_made_display">-</span></div>
                 <div id="team2_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
             </div>
         </div>
@@ -80,6 +122,60 @@
 {{ super() }}
 <script>
 let selectedActual = {};
+
+// Initialize special bid toggles on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSpecialBidToggles();
+});
+
+function initializeSpecialBidToggles() {
+    const team1Bid = '{{ round.team1_bid }}';
+    const team2Bid = '{{ round.team2_bid }}';
+    
+    setupSpecialBidToggles('team1', team1Bid);
+    setupSpecialBidToggles('team2', team2Bid);
+}
+
+function setupSpecialBidToggles(team, bidString) {
+    const specialBidsDiv = document.getElementById(`${team}_special_bids`);
+    const nilToggle = document.getElementById(`${team}_nil_toggle`);
+    const blindNilToggle = document.getElementById(`${team}_blind_nil_toggle`);
+    const blindToggle = document.getElementById(`${team}_blind_toggle`);
+    
+    // Hide all toggles initially
+    nilToggle.style.display = 'none';
+    blindNilToggle.style.display = 'none';
+    blindToggle.style.display = 'none';
+    
+    let hasSpecialBid = false;
+    
+    // Show relevant toggles based on raw bid string format
+    if (bidString.endsWith('bn')) {
+        // Blind nil combination (e.g., "4bn")
+        blindNilToggle.style.display = 'block';
+        hasSpecialBid = true;
+    } else if (bidString.endsWith('n')) {
+        // Nil combination (e.g., "4n")
+        nilToggle.style.display = 'block';
+        hasSpecialBid = true;
+    } else if (bidString.endsWith('b')) {
+        // Blind bid (e.g., "4b")
+        blindToggle.style.display = 'block';
+        hasSpecialBid = true;
+    }
+    
+    // Show/hide the special bids section
+    specialBidsDiv.style.display = hasSpecialBid ? 'block' : 'none';
+    
+    // Add event listeners to checkboxes for score preview updates
+    const checkboxes = [`${team}_nil_success`, `${team}_blind_nil_success`, `${team}_blind_success`];
+    checkboxes.forEach(checkboxId => {
+        const checkbox = document.getElementById(checkboxId);
+        if (checkbox) {
+            checkbox.addEventListener('change', updateScorePreview);
+        }
+    });
+}
 
 function setActual(team, value) {
     selectedActual[team] = value;
@@ -174,7 +270,7 @@ function updateScorePreview() {
     // Update Team 1 score preview
     const team1Element = document.getElementById('team1_score_preview');
     if (team1Actual !== undefined) {
-        const team1Score = calculateRoundScore(team1Bid, team1Actual);
+        const team1Score = calculateRoundScore(team1Bid, team1Actual, 'team1');
         team1Element.textContent = team1Score >= 0 ? `+${team1Score}` : `${team1Score}`;
         team1Element.className = team1Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
     } else {
@@ -185,7 +281,7 @@ function updateScorePreview() {
     // Update Team 2 score preview
     const team2Element = document.getElementById('team2_score_preview');
     if (team2Actual !== undefined) {
-        const team2Score = calculateRoundScore(team2Bid, team2Actual);
+        const team2Score = calculateRoundScore(team2Bid, team2Actual, 'team2');
         team2Element.textContent = team2Score >= 0 ? `+${team2Score}` : `${team2Score}`;
         team2Element.className = team2Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
     } else {
@@ -204,30 +300,83 @@ function getBidValue(bidString) {
     }
 }
 
-function calculateRoundScore(bidString, actual) {
-    const isNil = bidString.endsWith('n');
+function calculateRoundScore(bidString, actual, team) {
+    // Get special bid success status
+    const nilSuccess = document.getElementById(`${team}_nil_success`)?.checked || false;
+    const blindNilSuccess = document.getElementById(`${team}_blind_nil_success`)?.checked || false;
+    const blindSuccess = document.getElementById(`${team}_blind_success`)?.checked || false;
+    
+    // Parse bid type from raw bid string
     const isBlindNil = bidString.endsWith('bn');
+    const isNil = bidString.endsWith('n') && !isBlindNil;
     const isBlind = bidString.endsWith('b') && !isBlindNil;
     
+    let totalScore = 0;
+    
     if (isBlindNil) {
-        // Blind Nil: +200 if made (0 tricks), -200 if failed
-        return actual === 0 ? 200 : -200;
+        // Combination blind nil (e.g., "5bn")
+        const bidValue = parseInt(bidString.slice(0, -2));
+        
+        if (bidValue === 0) {
+            // Pure blind nil ("0bn")
+            totalScore = blindNilSuccess ? 200 : -200;
+        } else {
+            // Base score for the regular bid part
+            if (actual >= bidValue) {
+                totalScore += (bidValue * 10) + (actual - bidValue);
+            } else {
+                totalScore -= (bidValue * 10);
+            }
+            
+            // Add blind nil bonus/penalty
+            totalScore += blindNilSuccess ? 200 : -200;
+        }
+        
     } else if (isNil) {
-        // Nil: +100 if made (0 tricks), -100 if failed
-        return actual === 0 ? 100 : -100;
+        // Combination nil (e.g., "5n")
+        const bidValue = parseInt(bidString.slice(0, -1));
+        
+        if (bidValue === 0) {
+            // Pure nil ("0n")
+            totalScore = nilSuccess ? 100 : -100;
+        } else {
+            // Base score for the regular bid part
+            if (actual >= bidValue) {
+                totalScore += (bidValue * 10) + (actual - bidValue);
+            } else {
+                totalScore -= (bidValue * 10);
+            }
+            
+            // Add nil bonus/penalty
+            totalScore += nilSuccess ? 100 : -100;
+        }
+        
+    } else if (isBlind) {
+        // Blind bid (e.g., "5b")
+        const bidValue = parseInt(bidString.slice(0, -1));
+        
+        if (blindSuccess) {
+            // Successful blind bid: doubled points + overtricks
+            totalScore = (bidValue * 10 * 2) + (actual - bidValue);
+        } else {
+            // Failed blind bid: doubled penalty
+            totalScore = -(bidValue * 10 * 2);
+        }
+        
     } else {
-        const bidValue = getBidValue(bidString);
-        const baseScore = bidValue * 10;
+        // Regular bid
+        const bidValue = parseInt(bidString);
         
         if (actual >= bidValue) {
             // Made the bid: base score + bags
-            const bags = actual - bidValue;
-            return baseScore + bags;
+            totalScore = (bidValue * 10) + (actual - bidValue);
         } else {
             // Failed the bid: negative base score
-            return -baseScore;
+            totalScore = -(bidValue * 10);
         }
     }
+    
+    return totalScore;
 }
 </script>
 {% endblock %}

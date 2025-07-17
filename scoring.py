@@ -1,13 +1,73 @@
 def parse_bid(bid_string):
-    """Parse bid string format: '7', '4b', '0n', '0bn'"""
+    """Parse bid string format: '7', '4b', '0n', '0bn', '4n' (combination)"""
     if bid_string.endswith('bn'):
-        return int(bid_string[:-2]), 'blind_nil'
+        bid_value = int(bid_string[:-2])
+        if bid_value == 0:
+            return 0, 'blind_nil'
+        else:
+            return bid_value, 'combination_blind_nil'
     elif bid_string.endswith('b'):
         return int(bid_string[:-1]), 'blind'  
     elif bid_string.endswith('n'):
-        return int(bid_string[:-1]), 'nil'
+        bid_value = int(bid_string[:-1])
+        if bid_value == 0:
+            return 0, 'nil'
+        else:
+            return bid_value, 'combination_nil'
     else:
         return int(bid_string), 'regular'
+
+def calculate_round_points_with_flags(bid_string, actual_tricks, game, nil_success=False, blind_nil_success=False, blind_success=False):
+    """Calculate points for a round with explicit success/failure flags for special bids"""
+    bid_value, bid_type = parse_bid(bid_string)
+    
+    if bid_type == 'nil':
+        # Pure nil bid
+        return game['nil_penalty'] if actual_tricks == 0 else -game['nil_penalty']
+    
+    elif bid_type == 'combination_nil':
+        # Combination nil bid (e.g., "4n" = one player nil, other bids 4)
+        base_points = 0
+        if actual_tricks >= bid_value:
+            base_points = (bid_value * 10) + (actual_tricks - bid_value)
+        else:
+            base_points = -(bid_value * 10)
+        
+        # Add nil bonus/penalty based on success flag
+        nil_bonus = game['nil_penalty'] if nil_success else -game['nil_penalty']
+        return base_points + nil_bonus
+    
+    elif bid_type == 'combination_blind_nil':
+        # Combination blind nil bid (e.g., "4bn" = one player blind nil, other bids 4)
+        base_points = 0
+        if actual_tricks >= bid_value:
+            base_points = (bid_value * 10) + (actual_tricks - bid_value)
+        else:
+            base_points = -(bid_value * 10)
+        
+        # Add blind nil bonus/penalty based on success flag
+        blind_nil_bonus = game['blind_nil_penalty'] if blind_nil_success else -game['blind_nil_penalty']
+        return base_points + blind_nil_bonus
+    
+    elif bid_type == 'blind_nil':
+        # Pure blind nil bid
+        return game['blind_nil_penalty'] if actual_tricks == 0 else -game['blind_nil_penalty']
+    
+    elif bid_type == 'blind':
+        # Blind bid (doubled points/penalties)
+        if blind_success:
+            # Successful blind bid: doubled points + overtricks
+            return (bid_value * 10 * 2) + (actual_tricks - bid_value)
+        else:
+            # Failed blind bid: doubled penalty
+            return -(bid_value * 10 * 2)
+    
+    else:  # 'regular'
+        # Standard bid
+        if actual_tricks >= bid_value:
+            return (bid_value * 10) + (actual_tricks - bid_value)
+        else:
+            return -(bid_value * 10)
 
 def calculate_round_points(bid_string, actual_tricks, game):
     """Calculate points for a round based on bid and actual tricks"""
@@ -31,6 +91,34 @@ def calculate_round_points(bid_string, actual_tricks, game):
                 # Failed nil tricks ignored
                 return base_penalty
     
+    elif bid_type == 'combination_nil':
+        # Combination bid (e.g., "4n" = one player bids nil, other bids 4)
+        # Score as regular bid + nil bonus if successful
+        base_points = 0
+        if actual_tricks >= bid_value:
+            base_points = (bid_value * 10) + (actual_tricks - bid_value)
+        else:
+            base_points = -(bid_value * 10)
+        
+        # Add nil bonus (assuming nil player took 0 tricks)
+        # This is simplified - in reality you'd need to track individual player performance
+        nil_bonus = game['nil_penalty']
+        return base_points + nil_bonus
+    
+    elif bid_type == 'combination_blind_nil':
+        # Combination blind nil bid (e.g., "4bn" = one player bids blind nil, other bids 4)
+        # Score as regular bid + blind nil bonus if successful
+        base_points = 0
+        if actual_tricks >= bid_value:
+            base_points = (bid_value * 10) + (actual_tricks - bid_value)
+        else:
+            base_points = -(bid_value * 10)
+        
+        # Add blind nil bonus (assuming blind nil player took 0 tricks)
+        # This is simplified - in reality you'd need to track individual player performance
+        blind_nil_bonus = game['blind_nil_penalty']
+        return base_points + blind_nil_bonus
+    
     elif bid_type == 'blind_nil':
         # Blind nil bid
         if actual_tricks == 0:
@@ -47,11 +135,11 @@ def calculate_round_points(bid_string, actual_tricks, game):
                 return base_penalty
     
     elif bid_type == 'blind':
-        # Blind bid (not nil)
+        # Blind bid (not nil) - doubled points/penalties
         if actual_tricks >= bid_value:
-            return (bid_value * 10) + (actual_tricks - bid_value)
+            return (bid_value * 10 * 2) + (actual_tricks - bid_value)
         else:
-            return -(bid_value * 10)
+            return -(bid_value * 10 * 2)
     
     else:  # 'regular'
         # Standard bid
@@ -76,6 +164,14 @@ def calculate_bags_earned(bid_string, actual_tricks, game):
             else:  # 'no_effect'
                 return 0  # Tricks ignored
     
+    elif bid_type == 'combination_nil':
+        # Combination bid - bags are calculated like regular bids
+        return max(0, actual_tricks - bid_value)
+    
+    elif bid_type == 'combination_blind_nil':
+        # Combination blind nil bid - bags are calculated like regular bids
+        return max(0, actual_tricks - bid_value)
+    
     else:
         # Regular or blind bid
         return max(0, actual_tricks - bid_value)
@@ -86,6 +182,10 @@ def format_bid_display(bid_string):
     
     if bid_type == 'nil':
         return "Nil"
+    elif bid_type == 'combination_nil':
+        return f"{bid_value} (with Nil)"
+    elif bid_type == 'combination_blind_nil':
+        return f"{bid_value} (with Blind Nil)"
     elif bid_type == 'blind_nil':
         return "Blind Nil"
     elif bid_type == 'blind':

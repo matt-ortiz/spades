@@ -13,17 +13,18 @@
             <div class="text-sm font-medium text-blue-800 mb-2">{{ game.team1_player1 }} & {{ game.team1_player2 }}</div>
             <div class="text-3xl font-bold text-blue-900">{{ game.team1_final_score }}</div>
             {% if game.team1_bags > 0 %}
-            <div class="text-sm text-yellow-600 mt-1">{{ game.team1_bags }} bags</div>
+            <div class="text-xs text-yellow-600 mt-1">{{ game.team1_bags }} bags</div>
             {% endif %}
         </div>
         <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center border border-purple-200">
             <div class="text-sm font-medium text-purple-800 mb-2">{{ game.team2_player1 }} & {{ game.team2_player2 }}</div>
             <div class="text-3xl font-bold text-purple-900">{{ game.team2_final_score }}</div>
             {% if game.team2_bags > 0 %}
-            <div class="text-sm text-yellow-600 mt-1">{{ game.team2_bags }} bags</div>
+            <div class="text-xs text-yellow-600 mt-1">{{ game.team2_bags }} bags</div>
             {% endif %}
         </div>
     </div>
+</div>
 
     <!-- Total Differential Display -->
     {% if game.team1_final_score != game.team2_final_score %}

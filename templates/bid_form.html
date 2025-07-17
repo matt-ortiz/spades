@@ -39,6 +39,10 @@
                     <input type="checkbox" id="team1_blind_nil" class="mr-2" onchange="updateTeamBid('team1')">
                     <span class="text-sm font-medium text-gray-700">Blind Nil</span>
                 </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team1_blind" class="mr-2" onchange="updateTeamBid('team1')">
+                    <span class="text-sm font-medium text-gray-700">Blind</span>
+                </label>
             </div>
             
             <input type="hidden" id="team1_bid" name="team1_bid" required>
@@ -67,6 +71,10 @@
                 <label class="flex items-center cursor-pointer">
                     <input type="checkbox" id="team2_blind_nil" class="mr-2" onchange="updateTeamBid('team2')">
                     <span class="text-sm font-medium text-gray-700">Blind Nil</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team2_blind" class="mr-2" onchange="updateTeamBid('team2')">
+                    <span class="text-sm font-medium text-gray-700">Blind</span>
                 </label>
             </div>
             
@@ -135,18 +143,22 @@ function updateTeamBid(team) {
     const selectedNumber = selectedNumbers[team];
     const nilChecked = document.getElementById(`${team}_nil`).checked;
     const blindNilChecked = document.getElementById(`${team}_blind_nil`).checked;
+    const blindChecked = document.getElementById(`${team}_blind`).checked;
     
     let display = '';
     let bidString = '';
     
     if (selectedNumber > 0) {
         if (nilChecked && blindNilChecked) {
-            display = 'Blind Nil';
+            display = `${selectedNumber} (with Blind Nil)`;
             bidString = `${selectedNumber}bn`;
         } else if (nilChecked) {
-            display = 'Nil';
+            display = `${selectedNumber} (with Nil)`;
             bidString = `${selectedNumber}n`;
         } else if (blindNilChecked) {
+            display = `${selectedNumber} (with Blind Nil)`;
+            bidString = `${selectedNumber}bn`;
+        } else if (blindChecked) {
             display = `${selectedNumber} (Blind)`;
             bidString = `${selectedNumber}b`;
         } else {
@@ -209,8 +221,10 @@ function updateBidSummary(team1Bid, team2Bid) {
 }
 
 function getBidValue(bidString) {
-    if (bidString.endsWith('bn') || bidString.endsWith('n')) {
-        return 0; // Nil and blind nil count as 0 for bid total
+    if (bidString.endsWith('bn')) {
+        return 0; // Blind nil is always 0
+    } else if (bidString.endsWith('n')) {
+        return parseInt(bidString.slice(0, -1)); // Extract number before 'n' for combination bids
     } else if (bidString.endsWith('b')) {
         return parseInt(bidString.slice(0, -1));
     } else {
@@ -220,11 +234,17 @@ function getBidValue(bidString) {
 
 function formatBidDisplay(bidString) {
     if (bidString.endsWith('bn')) {
-        return 'Blind Nil';
+        const number = bidString.slice(0, -2);
+        if (number === '0') {
+            return 'Blind Nil';
+        } else {
+            return `${number} (with Blind Nil)`;
+        }
+    } else if (bidString.endsWith('n')) {
+        const number = bidString.slice(0, -1);
+        return `${number} (with Nil)`;
     } else if (bidString.endsWith('b')) {
         return `${bidString.slice(0, -1)} (Blind)`;
-    } else if (bidString.endsWith('n')) {
-        return 'Nil';
     } else {
         return bidString;
     }
