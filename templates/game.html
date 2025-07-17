@@ -47,6 +47,9 @@
     </div>
     {% endif %}
 
+    <!-- Define completed_rounds for use throughout template -->
+    {% set completed_rounds = rounds | rejectattr('team1_actual', 'equalto', none) | list %}
+
     {% if game.status == 'completed' %}
     <div class="bg-green-50 rounded-lg border border-green-200 p-6">
         <div class="text-center mb-4">
@@ -63,7 +66,6 @@
         </div>
         
         <!-- Game Stats -->
-        {% set completed_rounds = rounds | rejectattr('team1_actual', 'equalto', none) | list %}
         {% set total_rounds = completed_rounds | length %}
         
         <!-- Calculate stats using filters instead of loops -->
@@ -212,7 +214,7 @@
         {% endif %}
     </div>
     {% endif %}
-</div>
+
 
 {% if completed_rounds %}
 <div class="mt-8">
