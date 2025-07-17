@@ -183,12 +183,204 @@ def format_bid_display(bid_string):
     if bid_type == 'nil':
         return "Nil"
     elif bid_type == 'combination_nil':
-        return f"{bid_value} (with Nil)"
+        return f"{bid_value} nil"
     elif bid_type == 'combination_blind_nil':
-        return f"{bid_value} (with Blind Nil)"
+        return f"{bid_value} blind nil"
     elif bid_type == 'blind_nil':
         return "Blind Nil"
     elif bid_type == 'blind':
-        return f"{bid_value} (Blind)"
+        return f"Blind {bid_value}"
     else:
         return str(bid_value)
+
+def format_made_display(bid_string, actual_tricks, nil_success=None, blind_nil_success=None, blind_success=None):
+    """Format the 'made' display for round history"""
+    bid_value, bid_type = parse_bid(bid_string)
+    
+    if bid_type == 'nil':
+        return f"{actual_tricks} {'✓' if actual_tricks == 0 else '✗'}"
+    elif bid_type == 'combination_nil':
+        # Show like "6 nil+2" for 4 nil bid with 6 actual (nil success + 2 partner tricks)
+        if nil_success is not None:
+            if nil_success:
+                partner_tricks = actual_tricks
+                return f"{actual_tricks} nil ✓+{partner_tricks}"
+            else:
+                return f"{actual_tricks} nil ✗"
+        else:
+            # Fallback if success info not available
+            return f"{actual_tricks}"
+    elif bid_type == 'combination_blind_nil':
+        if blind_nil_success is not None:
+            if blind_nil_success:
+                partner_tricks = actual_tricks
+                return f"{actual_tricks} blind nil ✓+{partner_tricks}"
+            else:
+                return f"{actual_tricks} blind nil ✗"
+        else:
+            return f"{actual_tricks}"
+    elif bid_type == 'blind_nil':
+        return f"{actual_tricks} {'✓' if actual_tricks == 0 else '✗'}"
+    elif bid_type == 'blind':
+        if blind_success is not None:
+            return f"{actual_tricks} {'✓' if blind_success else '✗'}"
+        else:
+            return f"{actual_tricks}"
+    else:
+        return str(actual_tricks)
+
+def get_score_breakdown_detailed(bid_string, actual_tricks, points, game, nil_success=None, blind_nil_success=None, blind_success=None):
+    """Get detailed score breakdown in structured format for display"""
+    bid_value, bid_type = parse_bid(bid_string)
+    breakdown = []
+    
+    if bid_type == 'combination_nil':
+        # Base score calculation
+        if actual_tricks >= bid_value:
+            base_score = bid_value * 10
+            breakdown.append({
+                'label': f'Base ({bid_value} tricks)',
+                'value': f'+{base_score}',
+                'color': 'text-green-600'
+            })
+            if actual_tricks > bid_value:
+                bags = actual_tricks - bid_value
+                breakdown.append({
+                    'label': 'Bags',
+                    'value': f'+{bags}',
+                    'color': 'text-yellow-600'
+                })
+        else:
+            base_score = -(bid_value * 10)
+            breakdown.append({
+                'label': f'Base (failed {bid_value})',
+                'value': f'{base_score}',
+                'color': 'text-red-600'
+            })
+        
+        # Nil bonus/penalty
+        if nil_success:
+            breakdown.append({
+                'label': 'Nil bonus',
+                'value': f'+{game["nil_penalty"]}',
+                'color': 'text-green-600'
+            })
+        else:
+            breakdown.append({
+                'label': 'Nil penalty',
+                'value': f'-{game["nil_penalty"]}',
+                'color': 'text-red-600'
+            })
+            
+    elif bid_type == 'combination_blind_nil':
+        # Base score calculation
+        if actual_tricks >= bid_value:
+            base_score = bid_value * 10
+            breakdown.append({
+                'label': f'Base ({bid_value} tricks)',
+                'value': f'+{base_score}',
+                'color': 'text-green-600'
+            })
+            if actual_tricks > bid_value:
+                bags = actual_tricks - bid_value
+                breakdown.append({
+                    'label': 'Bags',
+                    'value': f'+{bags}',
+                    'color': 'text-yellow-600'
+                })
+        else:
+            base_score = -(bid_value * 10)
+            breakdown.append({
+                'label': f'Base (failed {bid_value})',
+                'value': f'{base_score}',
+                'color': 'text-red-600'
+            })
+        
+        # Blind nil bonus/penalty
+        if blind_nil_success:
+            breakdown.append({
+                'label': 'Blind nil bonus',
+                'value': f'+{game["blind_nil_penalty"]}',
+                'color': 'text-green-600'
+            })
+        else:
+            breakdown.append({
+                'label': 'Blind nil penalty',
+                'value': f'-{game["blind_nil_penalty"]}',
+                'color': 'text-red-600'
+            })
+            
+    elif bid_type == 'blind':
+        if blind_success:
+            doubled_score = bid_value * 10 * 2
+            breakdown.append({
+                'label': f'Blind success ({bid_value} × 2)',
+                'value': f'+{doubled_score}',
+                'color': 'text-green-600'
+            })
+            if actual_tricks > bid_value:
+                bags = actual_tricks - bid_value
+                breakdown.append({
+                    'label': 'Bags',
+                    'value': f'+{bags}',
+                    'color': 'text-yellow-600'
+                })
+        else:
+            doubled_penalty = -(bid_value * 10 * 2)
+            breakdown.append({
+                'label': f'Blind failed ({bid_value} × 2)',
+                'value': f'{doubled_penalty}',
+                'color': 'text-red-600'
+            })
+            
+    elif bid_type in ['nil', 'blind_nil']:
+        penalty_amount = game['blind_nil_penalty'] if bid_type == 'blind_nil' else game['nil_penalty']
+        if actual_tricks == 0:
+            label = 'Blind nil bonus' if bid_type == 'blind_nil' else 'Nil bonus'
+            breakdown.append({
+                'label': label,
+                'value': f'+{penalty_amount}',
+                'color': 'text-green-600'
+            })
+        else:
+            label = 'Blind nil penalty' if bid_type == 'blind_nil' else 'Nil penalty'
+            breakdown.append({
+                'label': label,
+                'value': f'-{penalty_amount}',
+                'color': 'text-red-600'
+            })
+            
+    else:
+        # Regular bid
+        if actual_tricks >= bid_value:
+            base_score = bid_value * 10
+            breakdown.append({
+                'label': f'Base ({bid_value} tricks)',
+                'value': f'+{base_score}',
+                'color': 'text-green-600'
+            })
+            if actual_tricks > bid_value:
+                bags = actual_tricks - bid_value
+                breakdown.append({
+                    'label': 'Bags',
+                    'value': f'+{bags}',
+                    'color': 'text-yellow-600'
+                })
+        else:
+            base_score = -(bid_value * 10)
+            breakdown.append({
+                'label': f'Base (failed {bid_value})',
+                'value': f'{base_score}',
+                'color': 'text-red-600'
+            })
+    
+    # Add bag penalty if applicable (this would need to be passed in)
+    # For now, this is a placeholder
+    # if bag_penalty_applied:
+    #     breakdown.append({
+    #         'label': 'Bag penalty',
+    #         'value': f'-{game["bag_penalty_points"]}',
+    #         'color': 'text-red-600'
+    #     })
+    
+    return breakdown

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import secrets
 from models import init_db, get_db_connection
 from auth import send_security_code, verify_security_code, require_login
-from scoring import calculate_round_points, calculate_round_points_with_flags, parse_bid, format_bid_display
+from scoring import calculate_round_points, calculate_round_points_with_flags, parse_bid, format_bid_display, format_made_display, get_score_breakdown_detailed
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
