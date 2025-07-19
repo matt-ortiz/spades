@@ -1,63 +1,376 @@
 {% extends "base.html" %}
 
-{% block title %}Spades Score Keeper - Track Your Games{% endblock %}
+{% block title %}Spades Score Keeper - The Ultimate Mobile Spades Companion{% endblock %}
 
 {% block header %}
-<div class="bg-spades-primary text-white text-center py-12">
-    <h1 class="text-4xl font-bold mb-4">🃏 Spades Score Keeper</h1>
-    <p class="text-xl text-blue-200 mb-2">The easiest way to track your Spades games</p>
-    <p class="text-sm text-blue-300">Mobile-friendly • Automatic scoring • Game history</p>
+<!-- Full-width hero section -->
+<div class="bg-gradient-to-br from-spades-primary via-slate-800 to-spades-secondary text-white">
+    <div class="max-w-6xl mx-auto px-6 py-16 text-center">
+        <div class="text-8xl mb-6">🃏</div>
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">Spades Score Keeper</h1>
+        <p class="text-xl md:text-2xl text-blue-200 mb-2">The ultimate mobile companion for Spades players</p>
+        <p class="text-lg text-blue-300 mb-8">Professional scoring • Zero arguments • Perfect games</p>
+
+        <div class="max-w-md mx-auto">
+            <a href="{{ url_for('login') }}"
+               class="cta-button block w-full bg-gradient-to-r from-spades-success to-green-600 text-white py-4 px-8 rounded-xl font-bold text-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                🚀 Start Playing Better Spades Now
+            </a>
+            <p class="text-sm text-blue-300 mt-3">No registration required • Free forever • Instant setup</p>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Perfect for Game Night</h2>
-        <p class="text-gray-600 mb-6">Stop arguing about the score! Let our app handle the math while you focus on playing.</p>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="text-center p-4">
-                <div class="text-3xl mb-2">📱</div>
-                <h3 class="font-semibold text-gray-800">Mobile Optimized</h3>
-                <p class="text-sm text-gray-600">Large buttons designed for easy scoring during games</p>
+<!-- Main content with proper responsive container -->
+<div class="max-w-6xl mx-auto px-6 py-12">
+
+    <!-- Core Features Grid - Better desktop layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div class="feature-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 text-center">
+            <div class="text-4xl mb-4">📱</div>
+            <h3 class="font-bold text-gray-800 mb-3 text-lg">Mobile-First Design</h3>
+            <ul class="text-sm text-gray-700 space-y-2 text-left">
+                <li>• Large touch buttons (1-13)</li>
+                <li>• Portrait layout optimized</li>
+                <li>• Touch-friendly modals</li>
+                <li>• Perfect for actual games</li>
+            </ul>
+        </div>
+
+        <div class="feature-card bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200 text-center">
+            <div class="text-4xl mb-4">🧮</div>
+            <h3 class="font-bold text-gray-800 mb-3 text-lg">Smart Scoring Engine</h3>
+            <ul class="text-sm text-gray-700 space-y-2 text-left">
+                <li>• Automatic calculations</li>
+                <li>• Full nil & blind nil support</li>
+                <li>• Configurable bag penalties</li>
+                <li>• Real-time validation</li>
+            </ul>
+        </div>
+
+        <div class="feature-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200 text-center">
+            <div class="text-4xl mb-4">🎯</div>
+            <h3 class="font-bold text-gray-800 mb-3 text-lg">Advanced Bid System</h3>
+            <ul class="text-sm text-gray-700 space-y-2 text-left">
+                <li>• Standard bids (1-13)</li>
+                <li>• Blind bids (2x scoring)</li>
+                <li>• Nil bids (100 points)</li>
+                <li>• Blind nil (200 points)</li>
+            </ul>
+        </div>
+
+        <div class="feature-card bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-6 border border-yellow-200 text-center">
+            <div class="text-4xl mb-4">⚙️</div>
+            <h3 class="font-bold text-gray-800 mb-3 text-lg">Flexible Game Rules</h3>
+            <ul class="text-sm text-gray-700 space-y-2 text-left">
+                <li>• Configurable max score</li>
+                <li>• Adjustable nil penalties</li>
+                <li>• Custom bag thresholds</li>
+                <li>• Failed nil handling</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Two-column layout for desktop -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+
+        <!-- Left Column: Professional Features -->
+        <div class="space-y-8">
+            <div class="bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-8 border border-gray-200">
+                <h3 class="font-bold text-gray-800 mb-6 text-xl text-center">🏆 Professional Features</h3>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3 text-lg">Game Management</h4>
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li>• Edit last round (fix mistakes instantly)</li>
+                            <li>• Auto-save rounds (never lose progress)</li>
+                            <li>• Game history & statistics</li>
+                            <li>• Abandon/resume games</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3 text-lg">Smart Validation</h4>
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li>• Bid validation (1-13 + modifiers)</li>
+                            <li>• Score validation (totals must equal 13)</li>
+                            <li>• Prevent duplicate round entry</li>
+                            <li>• Clear error messages</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div class="text-center p-4">
-                <div class="text-3xl mb-2">🧮</div>
-                <h3 class="font-semibold text-gray-800">Automatic Math</h3>
-                <p class="text-sm text-gray-600">Handles nil bids, blind nil, bags, and penalties automatically</p>
+
+            <!-- User Experience Benefits -->
+            <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-8 border border-indigo-200">
+                <h3 class="font-bold text-gray-800 mb-6 text-xl text-center">✨ Why Players Love It</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="text-green-500 font-bold text-lg">✓</div>
+                        <span class="text-gray-700">No more arguments about the score</span>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="text-green-500 font-bold text-lg">✓</div>
+                        <span class="text-gray-700">Focus on strategy, not math</span>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="text-green-500 font-bold text-lg">✓</div>
+                        <span class="text-gray-700">Works offline after loading</span>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="text-green-500 font-bold text-lg">✓</div>
+                        <span class="text-gray-700">Professional tournament-quality scoring</span>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="text-green-500 font-bold text-lg">✓</div>
+                        <span class="text-gray-700">Instant setup with any player names</span>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="text-green-500 font-bold text-lg">✓</div>
+                        <span class="text-gray-700">Zero learning curve</span>
+                    </div>
+                </div>
             </div>
-            <div class="text-center p-4">
-                <div class="text-3xl mb-2">📊</div>
-                <h3 class="font-semibold text-gray-800">Game History</h3>
-                <p class="text-sm text-gray-600">Review past games and track your progress</p>
+        </div>
+
+        <!-- Right Column: Scoring Examples & How It Works -->
+        <div class="space-y-8">
+            <!-- Scoring Examples -->
+            <div class="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-6 text-xl text-center">📊 Automatic Scoring Examples</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+                        <span><strong>Bid 5, Made 7:</strong> Base bid + Bags</span>
+                        <span class="text-green-600 font-bold text-lg">+52</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                        <span><strong>Blind 6, Made 6:</strong> Doubled success</span>
+                        <span class="text-green-600 font-bold text-lg">+120</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-purple-50 rounded-lg">
+                        <span><strong>Nil bid success:</strong> Zero tricks taken</span>
+                        <span class="text-green-600 font-bold text-lg">+100</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-yellow-50 rounded-lg">
+                        <span><strong>Blind Nil success:</strong> Ultimate risk</span>
+                        <span class="text-green-600 font-bold text-lg">+200</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How it Works -->
+            <div class="bg-white rounded-xl p-8 border border-gray-200">
+                <h3 class="font-bold text-gray-800 mb-6 text-xl text-center">🎮 How It Works</h3>
+                <div class="space-y-6">
+                    <div class="flex items-start space-x-4">
+                        <div class="bg-spades-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold flex-shrink-0">1</div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">Quick Email Verification</h4>
+                            <p class="text-sm text-gray-600">Enter your email, get a security code, verify and you're in</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="bg-spades-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold flex-shrink-0">2</div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">Create Game with Player Names</h4>
+                            <p class="text-sm text-gray-600">Enter any 4 player names, set your preferred rules, and start</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="bg-spades-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold flex-shrink-0">3</div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">Enter Bids & Scores Each Round</h4>
+                            <p class="text-sm text-gray-600">Large button interface makes scoring fast and accurate</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="bg-spades-success text-white rounded-full w-10 h-10 flex items-center justify-center font-bold flex-shrink-0">4</div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">Automatic Winner Detection</h4>
+                            <p class="text-sm text-gray-600">App tracks progress and declares winner when max score is reached</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="space-y-4">
-        <a href="{{ url_for('login') }}" 
-           class="block w-full bg-spades-success text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-green-600 transition-colors">
-            🚀 Get Started - Enter Your Email
-        </a>
+    <!-- Technical Features - Full width -->
+    <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-8 border border-gray-200 mb-16">
+        <h3 class="font-bold text-gray-800 mb-8 text-2xl text-center">🔧 Technical Excellence</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="text-center">
+                <h4 class="font-semibold text-gray-700 mb-3 text-lg">Security & Privacy</h4>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Email-based authentication</li>
+                    <li>• Minimal data collection</li>
+                    <li>• Session-based history</li>
+                    <li>• No tracking or analytics</li>
+                </ul>
+            </div>
+            <div class="text-center">
+                <h4 class="font-semibold text-gray-700 mb-3 text-lg">Performance</h4>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Lightweight & fast</li>
+                    <li>• Real-time validation</li>
+                    <li>• Auto-save functionality</li>
+                    <li>• Offline capability</li>
+                </ul>
+            </div>
+            <div class="text-center">
+                <h4 class="font-semibold text-gray-700 mb-3 text-lg">Reliability</h4>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Never lose game data</li>
+                    <li>• Error recovery built-in</li>
+                    <li>• Edit mistakes instantly</li>
+                    <li>• Consistent calculations</li>
+                </ul>
+            </div>
+            <div class="text-center">
+                <h4 class="font-semibold text-gray-700 mb-3 text-lg">Accessibility</h4>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Works on any device</li>
+                    <li>• Touch-friendly interface</li>
+                    <li>• Clear visual feedback</li>
+                    <li>• Simple, intuitive design</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
-    <div class="mt-8 pt-6 border-t border-gray-200">
-        <h3 class="font-semibold text-gray-800 mb-3">How it Works</h3>
-        <div class="text-left text-sm text-gray-600 space-y-2">
-            <div class="flex items-start">
-                <span class="text-spades-primary font-bold mr-2">1.</span>
-                <span>Enter your email address to get started</span>
-            </div>
-            <div class="flex items-start">
-                <span class="text-spades-primary font-bold mr-2">2.</span>
-                <span>Verify with the security code sent to your email</span>
-            </div>
-            <div class="flex items-start">
-                <span class="text-spades-primary font-bold mr-2">3.</span>
-                <span>Create games and start tracking scores!</span>
-            </div>
+    <!-- Final CTA -->
+    <div class="text-center">
+        <div class="max-w-lg mx-auto">
+            <a href="{{ url_for('login') }}"
+               class="cta-button block w-full bg-gradient-to-r from-spades-success to-green-600 text-white py-6 px-8 rounded-xl font-bold text-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                🎯 Ready to Play? Get Started Now!
+            </a>
+            <p class="text-sm text-gray-500 mt-4">
+                Used by serious Spades players • Mobile-optimized • Always free
+            </p>
         </div>
     </div>
 </div>
+
+<style>
+/* Override the base template's container for homepage */
+body.homepage .max-w-md {
+    max-width: none;
+}
+
+body.homepage .bg-white.shadow-xl {
+    box-shadow: none;
+    background: transparent;
+}
+
+/* Add some subtle animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.feature-card {
+    animation: fadeInUp 0.6s ease-out forwards;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.2s; }
+.feature-card:nth-child(3) { animation-delay: 0.3s; }
+.feature-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+    .max-w-6xl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .grid.lg\\:grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .grid.lg\\:grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .text-5xl.md\\:text-6xl {
+        font-size: 2.5rem;
+    }
+
+    .text-xl.md\\:text-2xl {
+        font-size: 1.125rem;
+    }
+}
+
+/* Enhanced button effects */
+.cta-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.cta-button:hover::before {
+    left: 100%;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Add homepage class to body for CSS targeting
+document.body.classList.add('homepage');
+
+// Smooth scroll for any anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+
+// Add intersection observer for animations
+if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    // Observe all feature cards
+    document.querySelectorAll('.feature-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        observer.observe(card);
+    });
+}
+</script>
 {% endblock %}
