@@ -304,10 +304,17 @@
 </div>
 {% endif %}
 
-<div class="text-center mt-8">
-    <a href="{{ url_for('dashboard') }}" class="bg-spades-secondary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors btn-animate">
-        ← Back to Dashboard
-    </a>
+<div class="text-center mt-8 space-y-8">
+    <div>
+        <a href="{{ url_for('edit_game', game_id=game.id) }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors btn-animate">
+            ⚙️ Edit Game Settings
+        </a>
+    </div>
+    <div>
+        <a href="{{ url_for('dashboard') }}" class="bg-spades-secondary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors btn-animate">
+            ← Back to Dashboard
+        </a>
+    </div>
 </div>
 
 {% endblock %}

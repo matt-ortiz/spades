@@ -17,7 +17,15 @@
     <div class="bg-green-50 rounded-lg p-4 border border-green-200">
         <div class="space-y-6">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }} [Bid: {{ round.team1_bid | format_bid_display }}]</label>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-medium text-gray-700">{{ game.team1_player1 }}/{{ game.team1_player2 }}</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-blue-700 bg-blue-100 px-2 py-1 rounded">Bid: {{ round.team1_bid | format_bid_display }}</span>
+                        <a href="{{ url_for('edit_bids', game_id=game.id, round_id=round.id) }}" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 px-2 py-1 rounded transition-colors">
+                            ✏️ Edit
+                        </a>
+                    </div>
+                </div>
                 <div class="grid grid-cols-7 gap-2">
                     {% for i in range(14) %}
                     <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors btn-animate" onclick="setActual('team1', {{ i }})">
@@ -50,7 +58,15 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }} [Bid: {{ round.team2_bid | format_bid_display }}]</label>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-medium text-gray-700">{{ game.team2_player1 }}/{{ game.team2_player2 }}</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-purple-700 bg-purple-100 px-2 py-1 rounded">Bid: {{ round.team2_bid | format_bid_display }}</span>
+                        <a href="{{ url_for('edit_bids', game_id=game.id, round_id=round.id) }}" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 px-2 py-1 rounded transition-colors">
+                            ✏️ Edit
+                        </a>
+                    </div>
+                </div>
                 <div class="grid grid-cols-7 gap-2">
                     {% for i in range(14) %}
                     <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors btn-animate" onclick="setActual('team2', {{ i }})">

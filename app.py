@@ -439,5 +439,98 @@ def enter_scores(game_id):
     conn.close()
     return render_template('score_form.html', game=game, round=pending_round)
 
+@app.route('/game/<int:game_id>/round/<int:round_id>/edit-bids', methods=['GET', 'POST'])
+@require_login
+def edit_bids(game_id, round_id):
+    conn = get_db_connection()
+    
+    # Get game details
+    game = conn.execute('SELECT * FROM games WHERE id = ? AND created_by_user_id = ?', 
+                       (game_id, session['user_id'])).fetchone()
+    
+    if not game:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+    
+    # Get the specific round
+    round_data = conn.execute('SELECT * FROM rounds WHERE id = ? AND game_id = ?', 
+                             (round_id, game_id)).fetchone()
+    
+    if not round_data:
+        flash('Round not found')
+        conn.close()
+        return redirect(url_for('game', game_id=game_id))
+    
+    # Check if scores have already been entered (prevent editing if scores exist)
+    if round_data['team1_actual'] is not None:
+        flash('Cannot edit bids after scores have been entered')
+        conn.close()
+        return redirect(url_for('game', game_id=game_id))
+    
+    if request.method == 'POST':
+        team1_bid = request.form['team1_bid']
+        team2_bid = request.form['team2_bid']
+        
+        # Update the round with new bids
+        conn.execute('''
+            UPDATE rounds SET team1_bid = ?, team2_bid = ? WHERE id = ?
+        ''', (team1_bid, team2_bid, round_id))
+        
+        conn.commit()
+        conn.close()
+        
+        flash('Bids updated successfully!')
+        return redirect(url_for('enter_scores', game_id=game_id))
+    
+    conn.close()
+    return render_template('edit_bids.html', game=game, round=round_data)
+
+@app.route('/game/<int:game_id>/edit', methods=['GET', 'POST'])
+@require_login
+def edit_game(game_id):
+    conn = get_db_connection()
+    
+    # Get game details
+    game = conn.execute('SELECT * FROM games WHERE id = ? AND created_by_user_id = ?', 
+                       (game_id, session['user_id'])).fetchone()
+    
+    if not game:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        team1_player1 = request.form['team1_player1']
+        team1_player2 = request.form['team1_player2']
+        team2_player1 = request.form['team2_player1']
+        team2_player2 = request.form['team2_player2']
+        max_score = int(request.form.get('max_score', 500))
+        nil_penalty = int(request.form.get('nil_penalty', 100))
+        blind_nil_penalty = int(request.form.get('blind_nil_penalty', 200))
+        bag_penalty_threshold = int(request.form.get('bag_penalty_threshold', 10))
+        bag_penalty_points = int(request.form.get('bag_penalty_points', 100))
+        failed_nil_handling = request.form.get('failed_nil_handling', 'takes_bags')
+        
+        # Update game settings
+        conn.execute('''
+            UPDATE games SET 
+                team1_player1 = ?, team1_player2 = ?, team2_player1 = ?, team2_player2 = ?,
+                max_score = ?, nil_penalty = ?, blind_nil_penalty = ?, bag_penalty_threshold = ?,
+                bag_penalty_points = ?, failed_nil_handling = ?
+            WHERE id = ?
+        ''', (team1_player1, team1_player2, team2_player1, team2_player2,
+              max_score, nil_penalty, blind_nil_penalty, bag_penalty_threshold,
+              bag_penalty_points, failed_nil_handling, game_id))
+        
+        conn.commit()
+        conn.close()
+        
+        flash('Game settings updated successfully!')
+        return redirect(url_for('game', game_id=game_id))
+    
+    conn.close()
+    return render_template('edit_game.html', game=game)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
