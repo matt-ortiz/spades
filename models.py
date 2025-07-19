@@ -83,6 +83,34 @@ def init_db():
             team2_bags_earned INTEGER DEFAULT 0,
             team1_bags_total INTEGER DEFAULT 0,
             team2_bags_total INTEGER DEFAULT 0,
+            
+            -- Success/failure flags for special bids
+            team1_nil_success BOOLEAN DEFAULT NULL,
+            team1_blind_nil_success BOOLEAN DEFAULT NULL, 
+            team1_blind_success BOOLEAN DEFAULT NULL,
+            team2_nil_success BOOLEAN DEFAULT NULL,
+            team2_blind_nil_success BOOLEAN DEFAULT NULL,
+            team2_blind_success BOOLEAN DEFAULT NULL,
+            
+            -- Scoring components breakdown (clear paper trail)
+            team1_bid_points INTEGER DEFAULT 0,
+            team1_nil_bonus INTEGER DEFAULT 0,
+            team1_blind_nil_bonus INTEGER DEFAULT 0,
+            team1_blind_bonus INTEGER DEFAULT 0,
+            team1_bag_points INTEGER DEFAULT 0,
+            team1_bag_penalty INTEGER DEFAULT 0,
+            
+            team2_bid_points INTEGER DEFAULT 0,
+            team2_nil_bonus INTEGER DEFAULT 0,
+            team2_blind_nil_bonus INTEGER DEFAULT 0,
+            team2_blind_bonus INTEGER DEFAULT 0,
+            team2_bag_points INTEGER DEFAULT 0,
+            team2_bag_penalty INTEGER DEFAULT 0,
+            
+            -- Bag tracking for penalties
+            team1_bags_before_penalty INTEGER DEFAULT 0,
+            team2_bags_before_penalty INTEGER DEFAULT 0,
+            
             created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (game_id) REFERENCES games (id)
         )

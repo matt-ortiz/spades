@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import secrets
 from models import init_db, get_db_connection
 from auth import send_security_code, verify_security_code, require_login
-from scoring import calculate_round_points, calculate_round_points_with_flags, parse_bid, format_bid_display, format_made_display, get_score_breakdown_detailed
+from scoring import calculate_round_points, calculate_round_points_with_flags, parse_bid, format_bid_display, format_made_display, get_score_breakdown_detailed, calculate_detailed_round_scoring
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -47,6 +47,11 @@ def simple_datetime_filter(date_string):
 @app.template_filter('format_bid_display')
 def format_bid_display_filter(bid_string):
     return format_bid_display(bid_string)
+
+# Template global function for score breakdown
+@app.template_global()
+def get_score_breakdown_detailed_template(round_data):
+    return get_score_breakdown_detailed(round_data)
 
 @app.route('/')
 @require_login
@@ -321,12 +326,12 @@ def enter_scores(game_id):
         team2_blind_nil_success = request.form.get('team2_blind_nil_success') == 'on'
         team2_blind_success = request.form.get('team2_blind_success') == 'on'
         
-        # Calculate points using the new function with success flags
-        team1_points = calculate_round_points_with_flags(
+        # Calculate detailed scoring components for both teams
+        team1_scoring = calculate_detailed_round_scoring(
             pending_round['team1_bid'], team1_actual, game,
             team1_nil_success, team1_blind_nil_success, team1_blind_success
         )
-        team2_points = calculate_round_points_with_flags(
+        team2_scoring = calculate_detailed_round_scoring(
             pending_round['team2_bid'], team2_actual, game,
             team2_nil_success, team2_blind_nil_success, team2_blind_success
         )
@@ -339,13 +344,9 @@ def enter_scores(game_id):
         ''', (game_id,)).fetchone()
         
         if last_completed_round:
-            team1_total = last_completed_round['team1_total'] + team1_points
-            team2_total = last_completed_round['team2_total'] + team2_points
             team1_bags_total = last_completed_round['team1_bags_total']
             team2_bags_total = last_completed_round['team2_bags_total']
         else:
-            team1_total = team1_points
-            team2_total = team2_points
             team1_bags_total = 0
             team2_bags_total = 0
         
@@ -353,29 +354,62 @@ def enter_scores(game_id):
         team1_bags_earned = max(0, team1_actual - int(parse_bid(pending_round['team1_bid'])[0]))
         team2_bags_earned = max(0, team2_actual - int(parse_bid(pending_round['team2_bid'])[0]))
         
+        # Store bags before penalty for tracking
+        team1_bags_before_penalty = team1_bags_total + team1_bags_earned
+        team2_bags_before_penalty = team2_bags_total + team2_bags_earned
+        
         # Update bag totals
         team1_bags_total += team1_bags_earned
         team2_bags_total += team2_bags_earned
         
-        # Check for bag penalties
+        # Check for bag penalties and apply them
+        team1_bag_penalty = 0
+        team2_bag_penalty = 0
+        
         if team1_bags_total >= game['bag_penalty_threshold']:
-            team1_total -= game['bag_penalty_points']
+            team1_bag_penalty = game['bag_penalty_points']
             team1_bags_total = 0
         
         if team2_bags_total >= game['bag_penalty_threshold']:
-            team2_total -= game['bag_penalty_points']
+            team2_bag_penalty = game['bag_penalty_points']
             team2_bags_total = 0
         
-        # Update round with scores
+        # Calculate final round points including bag penalties
+        team1_points = team1_scoring['total_points'] - team1_bag_penalty
+        team2_points = team2_scoring['total_points'] - team2_bag_penalty
+        
+        # Calculate new totals
+        if last_completed_round:
+            team1_total = last_completed_round['team1_total'] + team1_points
+            team2_total = last_completed_round['team2_total'] + team2_points
+        else:
+            team1_total = team1_points
+            team2_total = team2_points
+        
+        # Update round with all detailed scoring data
         conn.execute('''
             UPDATE rounds SET 
                 team1_actual = ?, team2_actual = ?, team1_points = ?, team2_points = ?,
                 team1_total = ?, team2_total = ?, team1_bags_earned = ?, team2_bags_earned = ?,
-                team1_bags_total = ?, team2_bags_total = ?
+                team1_bags_total = ?, team2_bags_total = ?,
+                team1_nil_success = ?, team1_blind_nil_success = ?, team1_blind_success = ?,
+                team2_nil_success = ?, team2_blind_nil_success = ?, team2_blind_success = ?,
+                team1_bid_points = ?, team1_nil_bonus = ?, team1_blind_nil_bonus = ?, 
+                team1_blind_bonus = ?, team1_bag_points = ?, team1_bag_penalty = ?,
+                team2_bid_points = ?, team2_nil_bonus = ?, team2_blind_nil_bonus = ?, 
+                team2_blind_bonus = ?, team2_bag_points = ?, team2_bag_penalty = ?,
+                team1_bags_before_penalty = ?, team2_bags_before_penalty = ?
             WHERE id = ?
         ''', (team1_actual, team2_actual, team1_points, team2_points,
               team1_total, team2_total, team1_bags_earned, team2_bags_earned,
-              team1_bags_total, team2_bags_total, pending_round['id']))
+              team1_bags_total, team2_bags_total,
+              team1_nil_success, team1_blind_nil_success, team1_blind_success,
+              team2_nil_success, team2_blind_nil_success, team2_blind_success,
+              team1_scoring['bid_points'], team1_scoring['nil_bonus'], team1_scoring['blind_nil_bonus'],
+              team1_scoring['blind_bonus'], team1_scoring['bag_points'], team1_bag_penalty,
+              team2_scoring['bid_points'], team2_scoring['nil_bonus'], team2_scoring['blind_nil_bonus'],
+              team2_scoring['blind_bonus'], team2_scoring['bag_points'], team2_bag_penalty,
+              team1_bags_before_penalty, team2_bags_before_penalty, pending_round['id']))
         
         # Update game totals
         conn.execute('''

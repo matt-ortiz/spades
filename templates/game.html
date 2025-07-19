@@ -241,33 +241,28 @@
                     </div>
                     <div class="text-xs text-gray-500 mt-1">Total: {{ round.team1_total }}</div>
                 </div>
-                <div class="team1-summary">
-                    <div class="flex justify-between items-center mb-1">
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between items-center mb-2">
                         <span class="text-blue-700">Bid: {{ round.team1_bid | format_bid_display }}</span>
                         <span class="text-blue-700">Made: {{ round.team1_actual }}</span>
                     </div>
-                    {% if round.team1_bags_earned > 0 %}
-                    <div class="text-xs text-yellow-600 mb-2">+{{ round.team1_bags_earned }} bags</div>
-                    {% endif %}
-                </div>
-                <div class="team1-breakdown hidden">
-                    <div class="space-y-1 text-xs">
-                        <div class="flex justify-between">
-                            <span>Base (4 tricks):</span>
-                            <span class="text-green-600">+40</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Nil bonus:</span>
-                            <span class="text-green-600">+100</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Bags:</span>
-                            <span class="text-yellow-600">+2</span>
-                        </div>
-                        <div class="flex justify-between font-semibold border-t pt-1">
-                            <span>Total:</span>
-                            <span>+142</span>
-                        </div>
+                    {% set team1_breakdown = get_score_breakdown_detailed_template({
+                        'bid_points': round.team1_bid_points,
+                        'nil_bonus': round.team1_nil_bonus,
+                        'blind_nil_bonus': round.team1_blind_nil_bonus,
+                        'blind_bonus': round.team1_blind_bonus,
+                        'bag_points': round.team1_bag_points,
+                        'bag_penalty': round.team1_bag_penalty
+                    }) %}
+                    {% for item in team1_breakdown %}
+                    <div class="flex justify-between">
+                        <span>{{ item.label }}:</span>
+                        <span class="{{ item.color }}">{{ item.value }}</span>
+                    </div>
+                    {% endfor %}
+                    <div class="flex justify-between font-semibold border-t pt-1">
+                        <span>Round total:</span>
+                        <span class="{{ 'text-green-600' if round.team1_points > 0 else 'text-red-600' if round.team1_points < 0 else 'text-gray-900' }}">{{ '+' if round.team1_points > 0 else '' }}{{ round.team1_points }}</span>
                     </div>
                 </div>
             </div>
@@ -278,36 +273,32 @@
                     </div>
                     <div class="text-xs text-gray-500 mt-1">Total: {{ round.team2_total }}</div>
                 </div>
-                <div class="team2-summary">
-                    <div class="flex justify-between items-center mb-1">
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between items-center mb-2">
                         <span class="text-purple-700">Bid: {{ round.team2_bid | format_bid_display }}</span>
                         <span class="text-purple-700">Made: {{ round.team2_actual }}</span>
                     </div>
-                    {% if round.team2_bags_earned > 0 %}
-                    <div class="text-xs text-yellow-600 mb-2">+{{ round.team2_bags_earned }} bags</div>
-                    {% endif %}
-                </div>
-                <div class="team2-breakdown hidden">
-                    <div class="space-y-1 text-xs">
-                        <div class="flex justify-between">
-                            <span>Blind success (5 × 2):</span>
-                            <span class="text-green-600">+100</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Bags:</span>
-                            <span class="text-yellow-600">+2</span>
-                        </div>
-                        <div class="flex justify-between font-semibold border-t pt-1">
-                            <span>Total:</span>
-                            <span>+102</span>
-                        </div>
+                    {% set team2_breakdown = get_score_breakdown_detailed_template({
+                        'bid_points': round.team2_bid_points,
+                        'nil_bonus': round.team2_nil_bonus,
+                        'blind_nil_bonus': round.team2_blind_nil_bonus,
+                        'blind_bonus': round.team2_blind_bonus,
+                        'bag_points': round.team2_bag_points,
+                        'bag_penalty': round.team2_bag_penalty
+                    }) %}
+                    {% for item in team2_breakdown %}
+                    <div class="flex justify-between">
+                        <span>{{ item.label }}:</span>
+                        <span class="{{ item.color }}">{{ item.value }}</span>
+                    </div>
+                    {% endfor %}
+                    <div class="flex justify-between font-semibold border-t pt-1">
+                        <span>Round total:</span>
+                        <span class="{{ 'text-green-600' if round.team2_points > 0 else 'text-red-600' if round.team2_points < 0 else 'text-gray-900' }}">{{ '+' if round.team2_points > 0 else '' }}{{ round.team2_points }}</span>
                     </div>
                 </div>
             </div>
         </div>
-        <button onclick="toggleBreakdown('round{{ round.round_number }}')" class="w-full text-sm text-gray-600 hover:text-gray-800 transition-colors">
-            Tap to see score breakdown ↓
-        </button>
     </div>
     {% endfor %}
 </div>
@@ -319,34 +310,4 @@
     </a>
 </div>
 
-<script>
-function toggleBreakdown(roundId) {
-    // Toggle team1 summary/breakdown
-    const team1Summary = document.querySelector(`#${roundId} .team1-summary`);
-    const team1Breakdown = document.querySelector(`#${roundId} .team1-breakdown`);
-    
-    // Toggle team2 summary/breakdown
-    const team2Summary = document.querySelector(`#${roundId} .team2-summary`);
-    const team2Breakdown = document.querySelector(`#${roundId} .team2-breakdown`);
-    
-    // Find the button to update its text
-    const button = document.querySelector(`button[onclick="toggleBreakdown('${roundId}')"]`);
-    
-    if (team1Summary.classList.contains('hidden')) {
-        // Show summaries, hide breakdowns
-        team1Summary.classList.remove('hidden');
-        team1Breakdown.classList.add('hidden');
-        team2Summary.classList.remove('hidden');
-        team2Breakdown.classList.add('hidden');
-        button.innerHTML = 'Tap to see score breakdown ↓';
-    } else {
-        // Hide summaries, show breakdowns
-        team1Summary.classList.add('hidden');
-        team1Breakdown.classList.remove('hidden');
-        team2Summary.classList.add('hidden');
-        team2Breakdown.classList.remove('hidden');
-        button.innerHTML = 'Tap to hide breakdown ↑';
-    }
-}
-</script>
 {% endblock %}
