@@ -4,11 +4,14 @@ import os
 from datetime import datetime, timedelta
 import secrets
 from models import init_db, get_db_connection
-from auth import send_security_code, verify_security_code, require_login
+from auth import send_security_code, verify_security_code, require_login, cleanup_expired_codes
 from scoring import calculate_round_points, calculate_round_points_with_flags, parse_bid, format_bid_display, format_made_display, get_score_breakdown_detailed, calculate_detailed_round_scoring
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Make sessions permanent (never expire unless user logs out)
+app.permanent_session_lifetime = timedelta(days=365)  # 1 year
 
 # Initialize database on startup
 init_db()
@@ -54,6 +57,14 @@ def get_score_breakdown_detailed_template(round_data):
     return get_score_breakdown_detailed(round_data)
 
 @app.route('/')
+def homepage():
+    # Check if user is logged in
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    
+    return render_template('homepage.html')
+
+@app.route('/dashboard')
 @require_login
 def dashboard():
     conn = get_db_connection()
@@ -81,62 +92,60 @@ def dashboard():
                          active_games=active_games, 
                          completed_games=completed_games)
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        
-        conn = get_db_connection()
-        
-        # Check if email already exists
-        existing_user = conn.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
-        if existing_user:
-            flash('Email already registered')
-            conn.close()
-            return render_template('register.html')
-        
-        # Create user
-        conn.execute('INSERT INTO users (name, email) VALUES (?, ?)', (name, email))
-        conn.commit()
-        conn.close()
-        
-        flash('Registration successful! Please log in.')
-        return redirect(url_for('login'))
-    
-    return render_template('register.html')
+# Registration route removed - users are created automatically on first login
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
         
-        conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-        
-        if not user:
-            flash('Email not found. Please register first.')
-            conn.close()
-            return render_template('login.html')
-        
-        # Generate and send security code
-        code = secrets.randbelow(900000) + 100000  # 6-digit code
-        expires_at = datetime.now() + timedelta(minutes=15)
-        
-        conn.execute('''
-            INSERT INTO auth_codes (user_id, code, expires_at) 
-            VALUES (?, ?, ?)
-        ''', (user['id'], str(code), expires_at))
-        conn.commit()
-        conn.close()
-        
-        # Send email (for now, just flash the code for development)
-        if send_security_code(email, code):
-            session['pending_user_id'] = user['id']
-            flash(f'Security code sent to {email}')
-            return redirect(url_for('verify'))
-        else:
-            flash('Failed to send security code. Please try again.')
+        try:
+            conn = get_db_connection()
+            user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+            
+            if not user:
+                # Create user automatically with email as name (can be ignored later)
+                name = email.split('@')[0]  # Use part before @ as default name
+                cursor = conn.execute('INSERT INTO users (name, email) VALUES (?, ?)', (name, email))
+                user_id = cursor.lastrowid
+                conn.commit()  # Commit the user creation immediately
+                user = {'id': user_id, 'name': name, 'email': email}
+            
+            # Clean up old codes periodically
+            cleanup_expired_codes()
+            
+            # Generate and send security code
+            code = secrets.randbelow(900000) + 100000  # 6-digit code
+            expires_at = datetime.now() + timedelta(minutes=15)
+            
+            conn.execute('''
+                INSERT INTO auth_codes (user_id, code, expires_at) 
+                VALUES (?, ?, ?)
+            ''', (user['id'], str(code), expires_at))
+            conn.commit()
+            
+            # Send email (for now, just flash the code for development)
+            if send_security_code(email, code):
+                session['pending_user_id'] = user['id']
+                flash(f'Security code sent to {email}')
+                return redirect(url_for('verify'))
+            else:
+                flash('Failed to send security code. Please try again.')
+                
+        except sqlite3.OperationalError as e:
+            if "database is locked" in str(e):
+                flash('Database is temporarily busy. Please try again in a moment.')
+            else:
+                flash('Database error occurred. Please try again.')
+            print(f"Database error in login: {e}")
+        except Exception as e:
+            flash('An error occurred. Please try again.')
+            print(f"Unexpected error in login: {e}")
+        finally:
+            try:
+                conn.close()
+            except:
+                pass
     
     return render_template('login.html')
 
@@ -150,6 +159,7 @@ def verify():
         
         if verify_security_code(session['pending_user_id'], code):
             session['user_id'] = session['pending_user_id']
+            session.permanent = True  # Make session persistent
             del session['pending_user_id']
             
             # Update last login

@@ -44,22 +44,39 @@ def verify_security_code(user_id, code):
     """Verify security code and mark as used"""
     conn = get_db_connection()
     
-    # Find valid, unused code
+    # Find valid code (no need to check 'used' since we delete them)
     auth_code = conn.execute('''
         SELECT * FROM auth_codes 
-        WHERE user_id = ? AND code = ? AND used = FALSE AND expires_at > ?
+        WHERE user_id = ? AND code = ? AND expires_at > ?
         ORDER BY created_date DESC LIMIT 1
     ''', (user_id, code, datetime.now())).fetchone()
     
     if auth_code:
-        # Mark code as used
-        conn.execute('UPDATE auth_codes SET used = TRUE WHERE id = ?', (auth_code['id'],))
+        # Delete the used code (no need to store it)
+        conn.execute('DELETE FROM auth_codes WHERE id = ?', (auth_code['id'],))
         conn.commit()
         conn.close()
         return True
     
     conn.close()
     return False
+
+def cleanup_expired_codes():
+    """Remove expired auth codes to keep the table clean"""
+    conn = get_db_connection()
+    
+    # Delete codes older than 24 hours (well past the 15 minute expiry)
+    cutoff = datetime.now() - timedelta(hours=24)
+    result = conn.execute('DELETE FROM auth_codes WHERE expires_at < ?', (cutoff,))
+    deleted_count = result.rowcount
+    
+    conn.commit()
+    conn.close()
+    
+    if deleted_count > 0:
+        print(f"Cleaned up {deleted_count} expired auth codes")
+    
+    return deleted_count
 
 def require_login(f):
     """Decorator to require login for routes"""

@@ -1,3 +1,4 @@
 *.db
 /__pycache__
 database.db
+/__pycache__

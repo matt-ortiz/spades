@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Spades Score Keeper - Track Your Games{% endblock %}
+
+{% block header %}
+<div class="bg-spades-primary text-white text-center py-12">
+    <h1 class="text-4xl font-bold mb-4">🃏 Spades Score Keeper</h1>
+    <p class="text-xl text-blue-200 mb-2">The easiest way to track your Spades games</p>
+    <p class="text-sm text-blue-300">Mobile-friendly • Automatic scoring • Game history</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Perfect for Game Night</h2>
+        <p class="text-gray-600 mb-6">Stop arguing about the score! Let our app handle the math while you focus on playing.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="text-center p-4">
+                <div class="text-3xl mb-2">📱</div>
+                <h3 class="font-semibold text-gray-800">Mobile Optimized</h3>
+                <p class="text-sm text-gray-600">Large buttons designed for easy scoring during games</p>
+            </div>
+            <div class="text-center p-4">
+                <div class="text-3xl mb-2">🧮</div>
+                <h3 class="font-semibold text-gray-800">Automatic Math</h3>
+                <p class="text-sm text-gray-600">Handles nil bids, blind nil, bags, and penalties automatically</p>
+            </div>
+            <div class="text-center p-4">
+                <div class="text-3xl mb-2">📊</div>
+                <h3 class="font-semibold text-gray-800">Game History</h3>
+                <p class="text-sm text-gray-600">Review past games and track your progress</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-4">
+        <a href="{{ url_for('login') }}" 
+           class="block w-full bg-spades-success text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-green-600 transition-colors">
+            🚀 Get Started - Enter Your Email
+        </a>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-gray-200">
+        <h3 class="font-semibold text-gray-800 mb-3">How it Works</h3>
+        <div class="text-left text-sm text-gray-600 space-y-2">
+            <div class="flex items-start">
+                <span class="text-spades-primary font-bold mr-2">1.</span>
+                <span>Enter your email address to get started</span>
+            </div>
+            <div class="flex items-start">
+                <span class="text-spades-primary font-bold mr-2">2.</span>
+                <span>Verify with the security code sent to your email</span>
+            </div>
+            <div class="flex items-start">
+                <span class="text-spades-primary font-bold mr-2">3.</span>
+                <span>Create games and start tracking scores!</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

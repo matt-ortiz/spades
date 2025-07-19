@@ -1,14 +1,33 @@
 import sqlite3
 import os
 from datetime import datetime
+from contextlib import contextmanager
 
 DATABASE = 'database.db'
 
 def get_db_connection():
     """Get database connection with row factory"""
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DATABASE, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    # Enable WAL mode for better concurrency
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('PRAGMA synchronous=NORMAL')
+    conn.execute('PRAGMA cache_size=1000')
+    conn.execute('PRAGMA temp_store=memory')
     return conn
+
+@contextmanager
+def get_db():
+    """Context manager for database connections"""
+    conn = get_db_connection()
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 def init_db():
     """Initialize database with all required tables"""
@@ -18,7 +37,7 @@ def init_db():
     conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
+            name TEXT DEFAULT '',
             email TEXT UNIQUE NOT NULL,
             created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             last_login TIMESTAMP
@@ -32,7 +51,6 @@ def init_db():
             user_id INTEGER NOT NULL,
             code TEXT NOT NULL,
             expires_at TIMESTAMP NOT NULL,
-            used BOOLEAN DEFAULT FALSE,
             created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
