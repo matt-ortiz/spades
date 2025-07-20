@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Bids - Spades Score Keeper{% endblock %}
+
+{% block subtitle %}{{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}{% endblock %}
+
+{% block datetime %}{{ game.created_date | datetime }}{% endblock %}
+
+{% block content %}
+{{ team_scores(game) }}
+
+<div class="mb-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">✏️ Edit Round {{ round.round_number }} Bids</h3>
+</div>
+
+<form method="POST" id="bidForm" class="space-y-6">
+    <div class="space-y-6">
+        <!-- Team 1 Bid Section -->
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <h4 class="text-base font-semibold text-blue-800 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }}</h4>
+            
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Number (1-13)</label>
+                <div class="grid grid-cols-7 gap-1">
+                    {% for i in range(1, 14) %}
+                    <button type="button" class="bg-white border border-gray-300 rounded py-2 px-1 text-sm font-semibold hover:bg-blue-100 hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors" onclick="selectTeamBid('team1', {{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="flex space-x-4 mb-3">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team1_nil" class="mr-2" onchange="updateTeamBid('team1')">
+                    <span class="text-sm font-medium text-gray-700">Nil</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team1_blind_nil" class="mr-2" onchange="updateTeamBid('team1')">
+                    <span class="text-sm font-medium text-gray-700">Blind Nil</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team1_blind" class="mr-2" onchange="updateTeamBid('team1')">
+                    <span class="text-sm font-medium text-gray-700">Blind</span>
+                </label>
+            </div>
+            
+            <input type="hidden" id="team1_bid" name="team1_bid" required>
+        </div>
+
+        <!-- Team 2 Bid Section -->
+        <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+            <h4 class="text-base font-semibold text-purple-800 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }}</h4>
+            
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Number (1-13)</label>
+                <div class="grid grid-cols-7 gap-1">
+                    {% for i in range(1, 14) %}
+                    <button type="button" class="bg-white border border-gray-300 rounded py-2 px-1 text-sm font-semibold hover:bg-purple-100 hover:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors" onclick="selectTeamBid('team2', {{ i }})">
+                        {{ i }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="flex space-x-4 mb-3">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team2_nil" class="mr-2" onchange="updateTeamBid('team2')">
+                    <span class="text-sm font-medium text-gray-700">Nil</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team2_blind_nil" class="mr-2" onchange="updateTeamBid('team2')">
+                    <span class="text-sm font-medium text-gray-700">Blind Nil</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="team2_blind" class="mr-2" onchange="updateTeamBid('team2')">
+                    <span class="text-sm font-medium text-gray-700">Blind</span>
+                </label>
+            </div>
+            
+            <input type="hidden" id="team2_bid" name="team2_bid" required>
+        </div>
+    </div>
+
+    <div id="bid_summary" class="hidden bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-3">📊 Bid Summary</h4>
+        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+            <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
+                <div id="team1_bid_summary" class="text-blue-700"></div>
+            </div>
+            <div class="bg-purple-50 p-3 rounded border border-purple-200">
+                <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
+                <div id="team2_bid_summary" class="text-purple-700"></div>
+            </div>
+        </div>
+        <div class="text-center bg-white rounded-lg p-3 border border-gray-200">
+            <div class="font-semibold text-gray-800">Total Bid</div>
+            <div id="total_bid_display" class="text-lg font-bold text-gray-900"></div>
+            <div id="bag_analysis" class="text-sm text-gray-600 mt-1"></div>
+        </div>
+    </div>
+
+    <button type="submit" class="w-full bg-spades-secondary text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-spades-secondary focus:ring-offset-2 transition-colors btn-animate disabled:opacity-50 disabled:cursor-not-allowed" id="submitBtn" disabled>
+        ✅ Update Bids
+    </button>
+</form>
+
+<div class="text-center mt-6">
+    <a href="{{ url_for('game', game_id=game.id) }}" class="text-spades-secondary hover:text-blue-600 font-medium">← Back to Game</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+let selectedNumbers = {team1: 0, team2: 0};
+
+// Initialize form with existing bid values
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFromExistingBids();
+});
+
+function initializeFromExistingBids() {
+    // Parse existing bids and set the form state
+    const team1Bid = '{{ round.team1_bid }}';
+    const team2Bid = '{{ round.team2_bid }}';
+    
+    parseBidAndSetForm('team1', team1Bid);
+    parseBidAndSetForm('team2', team2Bid);
+    
+    checkFormValidity();
+}
+
+function parseBidAndSetForm(team, bidString) {
+    if (!bidString) return;
+    
+    // Parse the bid string to extract number and flags
+    let number = 0;
+    let nil = false;
+    let blindNil = false;
+    let blind = false;
+    
+    if (bidString.endsWith('bn')) {
+        // Blind nil combination
+        number = parseInt(bidString.slice(0, -2));
+        blindNil = true;
+    } else if (bidString.endsWith('n')) {
+        // Nil combination
+        number = parseInt(bidString.slice(0, -1));
+        nil = true;
+    } else if (bidString.endsWith('b')) {
+        // Blind bid
+        number = parseInt(bidString.slice(0, -1));
+        blind = true;
+    } else {
+        // Regular bid
+        number = parseInt(bidString);
+    }
+    
+    // Set the number
+    if (number > 0) {
+        selectedNumbers[team] = number;
+        // Highlight the selected button
+        const button = document.querySelector(`button[onclick="selectTeamBid('${team}', ${number})"]`);
+        if (button) {
+            button.classList.remove('bg-white', 'border-gray-300');
+            if (team === 'team1') {
+                button.classList.add('bg-blue-100', 'border-blue-500');
+            } else {
+                button.classList.add('bg-purple-100', 'border-purple-500');
+            }
+        }
+    }
+    
+    // Set the checkboxes
+    document.getElementById(`${team}_nil`).checked = nil;
+    document.getElementById(`${team}_blind_nil`).checked = blindNil;
+    document.getElementById(`${team}_blind`).checked = blind;
+    
+    // Update the bid
+    updateTeamBid(team);
+}
+
+function selectTeamBid(team, number) {
+    selectedNumbers[team] = number;
+    
+    // Update button styles for this team
+    const buttons = document.querySelectorAll(`button[onclick*="selectTeamBid('${team}',"]`);
+    buttons.forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'bg-purple-100', 'border-blue-500', 'border-purple-500');
+        btn.classList.add('bg-white', 'border-gray-300');
+    });
+    
+    // Highlight selected button
+    event.target.classList.remove('bg-white', 'border-gray-300');
+    if (team === 'team1') {
+        event.target.classList.add('bg-blue-100', 'border-blue-500');
+    } else {
+        event.target.classList.add('bg-purple-100', 'border-purple-500');
+    }
+    
+    updateTeamBid(team);
+}
+
+function updateTeamBid(team) {
+    const selectedNumber = selectedNumbers[team];
+    const nilChecked = document.getElementById(`${team}_nil`).checked;
+    const blindNilChecked = document.getElementById(`${team}_blind_nil`).checked;
+    const blindChecked = document.getElementById(`${team}_blind`).checked;
+    
+    let display = '';
+    let bidString = '';
+    
+    if (selectedNumber > 0) {
+        if (nilChecked && blindNilChecked) {
+            display = `${selectedNumber} (with Blind Nil)`;
+            bidString = `${selectedNumber}bn`;
+        } else if (nilChecked) {
+            display = `${selectedNumber} (with Nil)`;
+            bidString = `${selectedNumber}n`;
+        } else if (blindNilChecked) {
+            display = `${selectedNumber} (with Blind Nil)`;
+            bidString = `${selectedNumber}bn`;
+        } else if (blindChecked) {
+            display = `${selectedNumber} (Blind)`;
+            bidString = `${selectedNumber}b`;
+        } else {
+            display = selectedNumber.toString();
+            bidString = selectedNumber.toString();
+        }
+    } else {
+        display = 'Select a number';
+        bidString = '';
+    }
+    
+    document.getElementById(`${team}_bid`).value = bidString;
+    
+    checkFormValidity();
+}
+
+function checkFormValidity() {
+    const team1Bid = document.getElementById('team1_bid').value;
+    const team2Bid = document.getElementById('team2_bid').value;
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const bidSummary = document.getElementById('bid_summary');
+    
+    if (team1Bid && team2Bid) {
+        submitBtn.disabled = false;
+        bidSummary.classList.remove('hidden');
+        updateBidSummary(team1Bid, team2Bid);
+    } else {
+        submitBtn.disabled = true;
+        bidSummary.classList.add('hidden');
+    }
+}
+
+function updateBidSummary(team1Bid, team2Bid) {
+    const team1Value = getBidValue(team1Bid);
+    const team2Value = getBidValue(team2Bid);
+    const totalBid = team1Value + team2Value;
+    
+    // Update individual team summaries
+    document.getElementById('team1_bid_summary').textContent = `Bid: ${formatBidDisplay(team1Bid)}`;
+    document.getElementById('team2_bid_summary').textContent = `Bid: ${formatBidDisplay(team2Bid)}`;
+    
+    // Update total bid display
+    document.getElementById('total_bid_display').textContent = `${totalBid} tricks`;
+    
+    // Calculate bag analysis
+    const bagAnalysis = document.getElementById('bag_analysis');
+    if (totalBid < 13) {
+        const potentialBags = 13 - totalBid;
+        bagAnalysis.textContent = `${potentialBags} potential bags if all tricks are made`;
+        bagAnalysis.className = 'text-sm text-yellow-600 mt-1';
+    } else if (totalBid === 13) {
+        bagAnalysis.textContent = 'Perfect bid - no bags if all tricks are made';
+        bagAnalysis.className = 'text-sm text-green-600 mt-1';
+    } else {
+        const overbid = totalBid - 13;
+        bagAnalysis.textContent = `Overbid by ${overbid} - some bids will likely fail`;
+        bagAnalysis.className = 'text-sm text-red-600 mt-1';
+    }
+}
+
+function getBidValue(bidString) {
+    if (bidString.endsWith('bn')) {
+        return 0; // Blind nil is always 0
+    } else if (bidString.endsWith('n')) {
+        return parseInt(bidString.slice(0, -1)); // Extract number before 'n' for combination bids
+    } else if (bidString.endsWith('b')) {
+        return parseInt(bidString.slice(0, -1));
+    } else {
+        return parseInt(bidString);
+    }
+}
+
+function formatBidDisplay(bidString) {
+    if (bidString.endsWith('bn')) {
+        const number = bidString.slice(0, -2);
+        if (number === '0') {
+            return 'Blind Nil';
+        } else {
+            return `${number} (with Blind Nil)`;
+        }
+    } else if (bidString.endsWith('n')) {
+        const number = bidString.slice(0, -1);
+        return `${number} (with Nil)`;
+    } else if (bidString.endsWith('b')) {
+        return `${bidString.slice(0, -1)} (Blind)`;
+    } else {
+        return bidString;
+    }
+}
+</script>
+{% endblock %}

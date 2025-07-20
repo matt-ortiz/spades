@@ -47,22 +47,16 @@
                 <div class="text-3xl md:text-4xl font-bold font-mono tracking-wider">
                     {{ game.team1_final_score }}<span class="text-gray-400 mx-2 md:mx-3">-</span>{{ game.team2_final_score }}
                 </div>
-                {% if game.team1_bags > 0 or game.team2_bags > 0 %}
-                <div class="text-xs text-yellow-300 mt-2">
-                    {% if game.team1_bags > 0 %}{{ game.team1_bags }} bags{% endif %}
-                    {% if game.team1_bags > 0 and game.team2_bags > 0 %} | {% endif %}
-                    {% if game.team2_bags > 0 %}{{ game.team2_bags }} bags{% endif %}
-                </div>
-                {% endif %}
+
             </div>
         </div>
         
-        <div class="flex flex-col sm:flex-row gap-2">
-            <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate text-center">
+        <div class="flex flex-row gap-2">
+            <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary flex-1 text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate text-center">
                 View Game
             </a>
             {% if game.display_status != 'completed' %}
-            <a href="{{ url_for('add_round', game_id=game.id) }}" class="bg-spades-success text-white px-4 py-2 rounded font-medium hover:bg-green-600 transition-colors btn-animate text-center">
+            <a href="{{ url_for('add_round', game_id=game.id) }}" class="bg-spades-success flex-1 text-white px-4 py-2 rounded font-medium hover:bg-green-600 transition-colors btn-animate text-center">
                 Enter Bids
             </a>
             {% endif %}
