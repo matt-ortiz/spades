@@ -267,17 +267,84 @@
 </div>
 {% endif %}
 
-<div class="text-center mt-8 space-y-8 border-t-2 pt-6">
-    <div>
-        <a href="{{ url_for('edit_game', game_id=game.id) }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors btn-animate">
-            ⚙️ Edit Game Settings
-        </a>
+<!-- Game Settings Display -->
+<div class="mt-8 border-t-2 pt-6">
+    <div class="bg-gray-50 rounded-lg p-4 md:p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">⚙️ Game Settings</h3>
+            <a href="{{ url_for('edit_game', game_id=game.id) }}" class="text-sm bg-gray-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors">
+                ✏️ Edit
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <!-- Scoring Settings -->
+            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                <div class="font-medium text-gray-700 mb-2">📊 Scoring</div>
+                <div class="space-y-1">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Max score:</span>
+                        <span class="font-medium">{{ game.max_score }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Nil penalty:</span>
+                        <span class="font-medium">{{ game.nil_penalty }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Blind nil penalty:</span>
+                        <span class="font-medium">{{ game.blind_nil_penalty }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bag Settings -->
+            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                <div class="font-medium text-gray-700 mb-2">💰 Bags</div>
+                <div class="space-y-1">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Penalty threshold:</span>
+                        <span class="font-medium">{{ game.bag_penalty_threshold }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Penalty points:</span>
+                        <span class="font-medium">-{{ game.bag_penalty_points }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Failed Nil Handling -->
+            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                <div class="font-medium text-gray-700 mb-2">🎯 Failed Nil</div>
+                <div class="space-y-1">
+                    <div class="text-gray-600">Handling:</div>
+                    <div class="font-medium text-sm">
+                        {% if game.failed_nil_handling == 'takes_bags' %}
+                            <span class="text-yellow-600">Takes Bags</span>
+                        {% elif game.failed_nil_handling == 'helps_team' %}
+                            <span class="text-blue-600">Helps Team</span>
+                        {% else %}
+                            <span class="text-gray-600">No Effect</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        {% if game.failed_nil_handling == 'takes_bags' %}
+                            Failed nil tricks count as bags
+                        {% elif game.failed_nil_handling == 'helps_team' %}
+                            Failed nil tricks help partner's bid
+                        {% else %}
+                            Failed nil tricks are ignored
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <a href="{{ url_for('dashboard') }}" class="bg-spades-secondary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors btn-animate">
-            ← Back to Dashboard
-        </a>
-    </div>
+</div>
+
+<div class="text-center mt-6">
+    <a href="{{ url_for('dashboard') }}" class="bg-spades-secondary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors btn-animate">
+        ← Back to Dashboard
+    </a>
 </div>
 
 {% endblock %}
