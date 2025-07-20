@@ -107,18 +107,56 @@
         </div>
     </div>
 
-    <div id="score_preview" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 class="font-semibold text-gray-800 mb-3">📊 Round Score Preview</h4>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div class="bg-blue-50 p-3 rounded border border-blue-200">
-                <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
-                <div class="text-blue-700 mb-1">Bid: {{ round.team1_bid | format_bid_display }} | Made: <span id="team1_made_display">-</span></div>
-                <div id="team1_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
+    <h4 class="font-semibold text-gray-800 mb-3">📊 Round Score Preview</h4>
+    <div class="grid grid-cols-2 lg:grid-cols-2 gap-4 text-sm mb-6">
+        <div class="bg-blue-50 p-3 rounded border border-blue-200">
+
+            <div class="text-center mb-4">
+               <div class="font-medium text-blue-800 mb-2">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
+               <span id="team1_score_preview_lg" class="text-2xl font-bold text-gray-400">-</span>
             </div>
-            <div class="bg-purple-50 p-3 rounded border border-purple-200">
-                <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
-                <div class="text-purple-700 mb-1">Bid: {{ round.team2_bid | format_bid_display }} | Made: <span id="team2_made_display">-</span></div>
-                <div id="team2_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
+
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-blue-700">Bid: {{ round.team1_bid | format_bid_display }}</span>
+                <span class="text-blue-700">Made: <span id="team1_made_display">-</span></span>
+            </div>
+            
+            <!-- Score breakdown -->
+            <div id="team1_breakdown" class="space-y-1 mb-2">
+                <div class="text-xs text-gray-500 italic">Select tricks to see breakdown</div>
+            </div>
+            
+            <!-- Total score -->
+            <div class="border-t border-blue-200 pt-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-medium">Total:</span>
+                    <span id="team1_score_preview" class="text-lg font-bold text-gray-400">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-purple-50 p-3 rounded border border-purple-200">
+            <div class="text-center mb-4">
+               <div class="font-medium text-blue-800 mb-2">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
+               <span id="team2_score_preview_lg" class="text-2xl font-bold text-gray-400">-</span>
+            </div>
+
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-blue-700">Bid: {{ round.team2_bid | format_bid_display }}</span>
+                <span class="text-blue-700">Made: <span id="team2_made_display">-</span></span>
+            </div>
+
+            <!-- Score breakdown -->
+            <div id="team2_breakdown" class="space-y-1 mb-2">
+                <div class="text-xs text-gray-500 italic">Select tricks to see breakdown</div>
+            </div>
+            
+            <!-- Total score -->
+            <div class="border-t border-purple-200 pt-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-medium">Total:</span>
+                    <span id="team2_score_preview" class="text-lg font-bold text-gray-400">-</span>
+                </div>
             </div>
         </div>
     </div>
@@ -283,40 +321,61 @@ function updateScorePreview() {
     document.getElementById('team1_made_display').textContent = team1Actual !== undefined ? team1Actual : '-';
     document.getElementById('team2_made_display').textContent = team2Actual !== undefined ? team2Actual : '-';
     
-    // Update Team 1 score preview
-    const team1Element = document.getElementById('team1_score_preview');
-    if (team1Actual !== undefined) {
-        const team1Score = calculateRoundScore(team1Bid, team1Actual, 'team1');
-        team1Element.textContent = team1Score >= 0 ? `+${team1Score}` : `${team1Score}`;
-        team1Element.className = team1Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
-    } else {
-        team1Element.textContent = 'Select tricks';
-        team1Element.className = 'text-lg font-bold text-gray-400';
+    // Update Team 1 detailed breakdown
+    updateDetailedBreakdown('team1', team1Bid, team1Actual);
+    
+    // Update Team 2 detailed breakdown
+    updateDetailedBreakdown('team2', team2Bid, team2Actual);
+}
+
+function updateDetailedBreakdown(team, bidString, actual) {
+    const breakdownElement = document.getElementById(`${team}_breakdown`);
+    const scoreElement = document.getElementById(`${team}_score_preview`);
+    // Large Version
+    const scoreElement_lg = document.getElementById(`${team}_score_preview_lg`);
+
+    if (actual === undefined) {
+        breakdownElement.innerHTML = '<div class="text-xs text-gray-500 italic">Select tricks to see breakdown</div>';
+        scoreElement.textContent = '-';
+        scoreElement.className = 'text-lg font-bold text-gray-400';
+        // Large Version
+        scoreElement_lg.textContent = '-';
+        scoreElement_lg.className = 'text-2xl font-bold text-gray-400';
+        return;
     }
     
-    // Update Team 2 score preview
-    const team2Element = document.getElementById('team2_score_preview');
-    if (team2Actual !== undefined) {
-        const team2Score = calculateRoundScore(team2Bid, team2Actual, 'team2');
-        team2Element.textContent = team2Score >= 0 ? `+${team2Score}` : `${team2Score}`;
-        team2Element.className = team2Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
-    } else {
-        team2Element.textContent = 'Select tricks';
-        team2Element.className = 'text-lg font-bold text-gray-400';
+    const breakdown = calculateDetailedBreakdown(bidString, actual, team);
+    
+    // Create breakdown HTML
+    let breakdownHTML = '';
+    breakdown.components.forEach(component => {
+        if (component.value !== 0) {
+            const valueStr = component.value > 0 ? `+${component.value}` : `${component.value}`;
+            breakdownHTML += `
+                <div class="flex justify-between text-xs">
+                    <span>${component.label}:</span>
+                    <span class="${component.color}">${valueStr}</span>
+                </div>
+            `;
+        }
+    });
+    
+    if (breakdownHTML === '') {
+        breakdownHTML = '<div class="text-xs text-gray-500">No points scored</div>';
     }
+    
+    breakdownElement.innerHTML = breakdownHTML;
+    
+    // Update total score
+    const totalScore = breakdown.total;
+    scoreElement.textContent = totalScore >= 0 ? `+${totalScore}` : `${totalScore}`;
+    scoreElement.className = totalScore >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+    //Large Version
+    scoreElement_lg.textContent = totalScore >= 0 ? `+${totalScore}` : `${totalScore}`;
+    scoreElement_lg.className = totalScore >= 0 ? 'text-2xl font-bold text-green-600' : 'text-2xl font-bold text-red-600';
 }
 
-function getBidValue(bidString) {
-    if (bidString.endsWith('bn') || bidString.endsWith('n')) {
-        return 0;
-    } else if (bidString.endsWith('b')) {
-        return parseInt(bidString.slice(0, -1));
-    } else {
-        return parseInt(bidString);
-    }
-}
-
-function calculateRoundScore(bidString, actual, team) {
+function calculateDetailedBreakdown(bidString, actual, team) {
     // Get special bid success status
     const nilSuccess = document.getElementById(`${team}_nil_success`)?.checked || false;
     const blindNilSuccess = document.getElementById(`${team}_blind_nil_success`)?.checked || false;
@@ -327,6 +386,7 @@ function calculateRoundScore(bidString, actual, team) {
     const isNil = bidString.endsWith('n') && !isBlindNil;
     const isBlind = bidString.endsWith('b') && !isBlindNil;
     
+    const components = [];
     let totalScore = 0;
     
     if (isBlindNil) {
@@ -335,17 +395,50 @@ function calculateRoundScore(bidString, actual, team) {
         
         if (bidValue === 0) {
             // Pure blind nil ("0bn")
-            totalScore = blindNilSuccess ? 200 : -200;
+            const blindNilPoints = blindNilSuccess ? 200 : -200;
+            components.push({
+                label: blindNilSuccess ? 'Blind nil bonus' : 'Blind nil penalty',
+                value: blindNilPoints,
+                color: blindNilSuccess ? 'text-green-600' : 'text-red-600'
+            });
+            totalScore = blindNilPoints;
         } else {
             // Base score for the regular bid part
+            let baseBid = 0;
             if (actual >= bidValue) {
-                totalScore += (bidValue * 10) + (actual - bidValue);
+                baseBid = (bidValue * 10);
+                const bags = actual - bidValue;
+                components.push({
+                    label: 'Base bid',
+                    value: baseBid,
+                    color: 'text-green-600'
+                });
+                if (bags > 0) {
+                    components.push({
+                        label: 'Bags',
+                        value: bags,
+                        color: 'text-yellow-600'
+                    });
+                }
+                totalScore += baseBid + bags;
             } else {
-                totalScore -= (bidValue * 10);
+                baseBid = -(bidValue * 10);
+                components.push({
+                    label: 'Failed bid penalty',
+                    value: baseBid,
+                    color: 'text-red-600'
+                });
+                totalScore += baseBid;
             }
             
             // Add blind nil bonus/penalty
-            totalScore += blindNilSuccess ? 200 : -200;
+            const blindNilPoints = blindNilSuccess ? 200 : -200;
+            components.push({
+                label: blindNilSuccess ? 'Blind nil bonus' : 'Blind nil penalty',
+                value: blindNilPoints,
+                color: blindNilSuccess ? 'text-green-600' : 'text-red-600'
+            });
+            totalScore += blindNilPoints;
         }
         
     } else if (isNil) {
@@ -354,17 +447,50 @@ function calculateRoundScore(bidString, actual, team) {
         
         if (bidValue === 0) {
             // Pure nil ("0n")
-            totalScore = nilSuccess ? 100 : -100;
+            const nilPoints = nilSuccess ? 100 : -100;
+            components.push({
+                label: nilSuccess ? 'Nil bonus' : 'Nil penalty',
+                value: nilPoints,
+                color: nilSuccess ? 'text-green-600' : 'text-red-600'
+            });
+            totalScore = nilPoints;
         } else {
             // Base score for the regular bid part
+            let baseBid = 0;
             if (actual >= bidValue) {
-                totalScore += (bidValue * 10) + (actual - bidValue);
+                baseBid = (bidValue * 10);
+                const bags = actual - bidValue;
+                components.push({
+                    label: 'Base bid',
+                    value: baseBid,
+                    color: 'text-green-600'
+                });
+                if (bags > 0) {
+                    components.push({
+                        label: 'Bags',
+                        value: bags,
+                        color: 'text-yellow-600'
+                    });
+                }
+                totalScore += baseBid + bags;
             } else {
-                totalScore -= (bidValue * 10);
+                baseBid = -(bidValue * 10);
+                components.push({
+                    label: 'Failed bid penalty',
+                    value: baseBid,
+                    color: 'text-red-600'
+                });
+                totalScore += baseBid;
             }
             
             // Add nil bonus/penalty
-            totalScore += nilSuccess ? 100 : -100;
+            const nilPoints = nilSuccess ? 100 : -100;
+            components.push({
+                label: nilSuccess ? 'Nil bonus' : 'Nil penalty',
+                value: nilPoints,
+                color: nilSuccess ? 'text-green-600' : 'text-red-600'
+            });
+            totalScore += nilPoints;
         }
         
     } else if (isBlind) {
@@ -373,10 +499,30 @@ function calculateRoundScore(bidString, actual, team) {
         
         if (blindSuccess) {
             // Successful blind bid: doubled points + overtricks
-            totalScore = (bidValue * 10 * 2) + (actual - bidValue);
+            const baseBid = bidValue * 10 * 2;
+            const bags = actual - bidValue;
+            components.push({
+                label: 'Blind bonus (2x)',
+                value: baseBid,
+                color: 'text-green-600'
+            });
+            if (bags > 0) {
+                components.push({
+                    label: 'Bags',
+                    value: bags,
+                    color: 'text-yellow-600'
+                });
+            }
+            totalScore = baseBid + bags;
         } else {
             // Failed blind bid: doubled penalty
-            totalScore = -(bidValue * 10 * 2);
+            const penalty = -(bidValue * 10 * 2);
+            components.push({
+                label: 'Failed blind penalty (2x)',
+                value: penalty,
+                color: 'text-red-600'
+            });
+            totalScore = penalty;
         }
         
     } else {
@@ -385,14 +531,35 @@ function calculateRoundScore(bidString, actual, team) {
         
         if (actual >= bidValue) {
             // Made the bid: base score + bags
-            totalScore = (bidValue * 10) + (actual - bidValue);
+            const baseBid = bidValue * 10;
+            const bags = actual - bidValue;
+            components.push({
+                label: 'Base bid',
+                value: baseBid,
+                color: 'text-green-600'
+            });
+            if (bags > 0) {
+                components.push({
+                    label: 'Bags',
+                    value: bags,
+                    color: 'text-yellow-600'
+                });
+            }
+            totalScore = baseBid + bags;
         } else {
             // Failed the bid: negative base score
-            totalScore = -(bidValue * 10);
+            const penalty = -(bidValue * 10);
+            components.push({
+                label: 'Failed bid penalty',
+                value: penalty,
+                color: 'text-red-600'
+            });
+            totalScore = penalty;
         }
     }
     
-    return totalScore;
+    return { components, total: totalScore };
 }
+
 </script>
 {% endblock %}
