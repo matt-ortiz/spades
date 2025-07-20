@@ -37,22 +37,28 @@
                 
                 <!-- Special bid success/failure toggles -->
                 <div id="team1_special_bids" class="mt-4 space-y-2" style="display: none;">
-                    <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                        <div class="text-sm font-medium text-blue-800 mb-2">Special Bid Status:</div>
-                        <div class="space-y-2">
-                            <label class="flex items-center cursor-pointer" id="team1_nil_toggle" style="display: none;">
-                                <input type="checkbox" id="team1_nil_success" name="team1_nil_success" class="mr-2">
-                                <span class="text-sm text-gray-700">Nil successful</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer" id="team1_blind_nil_toggle" style="display: none;">
-                                <input type="checkbox" id="team1_blind_nil_success" name="team1_blind_nil_success" class="mr-2">
-                                <span class="text-sm text-gray-700">Blind Nil successful</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer" id="team1_blind_toggle" style="display: none;">
-                                <input type="checkbox" id="team1_blind_success" name="team1_blind_success" class="mr-2">
-                                <span class="text-sm text-gray-700">Blind bid successful</span>
-                            </label>
-                        </div>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-3 px-4 hover:border-blue-400 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50" id="team1_nil_toggle" style="display: none;">
+                            <input type="checkbox" id="team1_nil_success" name="team1_nil_success" class="sr-only">
+                            <span class="text-sm font-medium text-gray-700">
+                                <span class="checkbox-text-unchecked">❌ Nil unsuccessful</span>
+                                <span class="checkbox-text-checked hidden">✅ Nil successful</span>
+                            </span>
+                        </label>
+                        <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-3 px-4 hover:border-blue-400 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50" id="team1_blind_nil_toggle" style="display: none;">
+                            <input type="checkbox" id="team1_blind_nil_success" name="team1_blind_nil_success" class="sr-only">
+                            <span class="text-sm font-medium text-gray-700">
+                                <span class="checkbox-text-unchecked">❌ Blind Nil unsuccessful</span>
+                                <span class="checkbox-text-checked hidden">✅ Blind Nil successful</span>
+                            </span>
+                        </label>
+                        <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-3 px-4 hover:border-blue-400 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50" id="team1_blind_toggle" style="display: none;">
+                            <input type="checkbox" id="team1_blind_success" name="team1_blind_success" class="sr-only">
+                            <span class="text-sm font-medium text-gray-700">
+                                <span class="checkbox-text-unchecked">❌ Blind bid unsuccessful</span>
+                                <span class="checkbox-text-checked hidden">✅ Blind bid successful</span>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -78,22 +84,28 @@
                 
                 <!-- Special bid success/failure toggles -->
                 <div id="team2_special_bids" class="mt-4 space-y-2" style="display: none;">
-                    <div class="bg-purple-50 rounded-lg p-3 border border-purple-200">
-                        <div class="text-sm font-medium text-purple-800 mb-2">Special Bid Status:</div>
-                        <div class="space-y-2">
-                            <label class="flex items-center cursor-pointer" id="team2_nil_toggle" style="display: none;">
-                                <input type="checkbox" id="team2_nil_success" name="team2_nil_success" class="mr-2">
-                                <span class="text-sm text-gray-700">Nil successful</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer" id="team2_blind_nil_toggle" style="display: none;">
-                                <input type="checkbox" id="team2_blind_nil_success" name="team2_blind_nil_success" class="mr-2">
-                                <span class="text-sm text-gray-700">Blind Nil successful</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer" id="team2_blind_toggle" style="display: none;">
-                                <input type="checkbox" id="team2_blind_success" name="team2_blind_success" class="mr-2">
-                                <span class="text-sm text-gray-700">Blind bid successful</span>
-                            </label>
-                        </div>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-3 px-4 hover:border-purple-400 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50" id="team2_nil_toggle" style="display: none;">
+                            <input type="checkbox" id="team2_nil_success" name="team2_nil_success" class="sr-only">
+                            <span class="text-sm font-medium text-gray-700">
+                                <span class="checkbox-text-unchecked">❌ Nil unsuccessful</span>
+                                <span class="checkbox-text-checked hidden">✅ Nil successful</span>
+                            </span>
+                        </label>
+                        <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-3 px-4 hover:border-purple-400 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50" id="team2_blind_nil_toggle" style="display: none;">
+                            <input type="checkbox" id="team2_blind_nil_success" name="team2_blind_nil_success" class="sr-only">
+                            <span class="text-sm font-medium text-gray-700">
+                                <span class="checkbox-text-unchecked">❌ Blind Nil unsuccessful</span>
+                                <span class="checkbox-text-checked hidden">✅ Blind Nil successful</span>
+                            </span>
+                        </label>
+                        <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-3 px-4 hover:border-purple-400 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50" id="team2_blind_toggle" style="display: none;">
+                            <input type="checkbox" id="team2_blind_success" name="team2_blind_success" class="sr-only">
+                            <span class="text-sm font-medium text-gray-700">
+                                <span class="checkbox-text-unchecked">❌ Blind bid unsuccessful</span>
+                                <span class="checkbox-text-checked hidden">✅ Blind bid successful</span>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -221,12 +233,25 @@ function setupSpecialBidToggles(team, bidString) {
     // Show/hide the special bids section
     specialBidsDiv.style.display = hasSpecialBid ? 'block' : 'none';
     
-    // Add event listeners to checkboxes for score preview updates
+    // Add event listeners to checkboxes for score preview updates and text toggling
     const checkboxes = [`${team}_nil_success`, `${team}_blind_nil_success`, `${team}_blind_success`];
     checkboxes.forEach(checkboxId => {
         const checkbox = document.getElementById(checkboxId);
         if (checkbox) {
-            checkbox.addEventListener('change', updateScorePreview);
+            checkbox.addEventListener('change', function() {
+                updateScorePreview();
+                toggleCheckboxText(checkboxId);
+            });
+            
+            // Set up click handler for the label to toggle the hidden checkbox
+            const label = checkbox.closest('label');
+            if (label) {
+                label.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                });
+            }
         }
     });
 }
@@ -559,6 +584,27 @@ function calculateDetailedBreakdown(bidString, actual, team) {
     }
     
     return { components, total: totalScore };
+}
+
+function toggleCheckboxText(checkboxId) {
+    const checkbox = document.getElementById(checkboxId);
+    if (!checkbox) return;
+    
+    const label = checkbox.closest('label');
+    if (!label) return;
+    
+    const uncheckedText = label.querySelector('.checkbox-text-unchecked');
+    const checkedText = label.querySelector('.checkbox-text-checked');
+    
+    if (!uncheckedText || !checkedText) return;
+    
+    if (checkbox.checked) {
+        uncheckedText.classList.add('hidden');
+        checkedText.classList.remove('hidden');
+    } else {
+        uncheckedText.classList.remove('hidden');
+        checkedText.classList.add('hidden');
+    }
 }
 
 </script>
