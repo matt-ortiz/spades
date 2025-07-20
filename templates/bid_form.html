@@ -23,6 +23,9 @@
                 <label class="block text-sm font-medium text-gray-700 mb-3">Select Number (1-13)</label>
                 <!-- Responsive button grid -->
                 <div class="grid grid-cols-7 gap-1 md:gap-2">
+                    <button type="button" class="bg-white border border-gray-300 rounded py-2 md:py-3 px-1 md:px-2 text-sm md:text-base font-semibold hover:bg-blue-100 hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors" onclick="selectTeamBid('team1', 0)">
+                        0
+                    </button>
                     {% for i in range(1, 14) %}
                     <button type="button" class="bg-white border border-gray-300 rounded py-2 md:py-3 px-1 md:px-2 text-sm md:text-base font-semibold hover:bg-blue-100 hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors" onclick="selectTeamBid('team1', {{ i }})">
                         {{ i }}
@@ -57,6 +60,9 @@
                 <label class="block text-sm font-medium text-gray-700 mb-3">Select Number (1-13)</label>
                 <!-- Responsive button grid -->
                 <div class="grid grid-cols-7 gap-1 md:gap-2">
+                    <button type="button" class="bg-white border border-gray-300 rounded py-2 md:py-3 px-1 md:px-2 text-sm md:text-base font-semibold hover:bg-purple-100 hover:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors" onclick="selectTeamBid('team2', 0)">
+                        0
+                    </button>
                     {% for i in range(1, 14) %}
                     <button type="button" class="bg-white border border-gray-300 rounded py-2 md:py-3 px-1 md:px-2 text-sm md:text-base font-semibold hover:bg-purple-100 hover:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors" onclick="selectTeamBid('team2', {{ i }})">
                         {{ i }}
@@ -173,23 +179,47 @@ function updateTeamBid(team) {
     let display = '';
     let bidString = '';
     
-    if (selectedNumber > 0) {
+    if (selectedNumber >= 0) { // Changed from > 0 to >= 0 to include 0
         if (selectedBidType === 'blind_nil') {
-            display = `${selectedNumber} (with Blind Nil)`;
-            bidString = `${selectedNumber}bn`;
+            if (selectedNumber === 0) {
+                display = 'Blind Nil';
+                bidString = '0bn';
+            } else {
+                display = `${selectedNumber} (Blind Nil)`;
+                bidString = `${selectedNumber}bn`;
+            }
         } else if (selectedBidType === 'nil') {
-            display = `${selectedNumber} (with Nil)`;
-            bidString = `${selectedNumber}n`;
+            if (selectedNumber === 0) {
+                display = 'Nil';
+                bidString = '0n';
+            } else {
+                display = `${selectedNumber} (Nil)`;
+                bidString = `${selectedNumber}n`;
+            }
         } else if (selectedBidType === 'blind') {
-            display = `${selectedNumber} (Blind)`;
-            bidString = `${selectedNumber}b`;
+            if (selectedNumber === 0) {
+                display = 'Invalid: Cannot bid 0 blind';
+                bidString = '';
+            } else {
+                display = `${selectedNumber} (Blind)`;
+                bidString = `${selectedNumber}b`;
+            }
         } else {
             display = selectedNumber.toString();
             bidString = selectedNumber.toString();
         }
     } else {
-        display = 'Select a number';
-        bidString = '';
+        // selectedNumbers[team] is undefined/not set
+        if (selectedBidType === 'blind_nil') {
+            display = 'Blind Nil';
+            bidString = '0bn';
+        } else if (selectedBidType === 'nil') {
+            display = 'Nil';
+            bidString = '0n';
+        } else {
+            display = 'Select a number';
+            bidString = '';
+        }
     }
     
     document.getElementById(`${team}_bid`).value = bidString;
@@ -252,9 +282,11 @@ function updateBidSummary(team1Bid, team2Bid) {
 
 function getBidValue(bidString) {
     if (bidString.endsWith('bn')) {
-        return 0; // Blind nil is always 0
+        const number = parseInt(bidString.slice(0, -2));
+        return isNaN(number) ? 0 : number; // Handle "0bn" (pure blind nil) vs "5bn" (combination)
     } else if (bidString.endsWith('n')) {
-        return parseInt(bidString.slice(0, -1)); // Extract number before 'n' for combination bids
+        const number = parseInt(bidString.slice(0, -1));
+        return isNaN(number) ? 0 : number; // Handle "0n" (pure nil) vs "5n" (combination)
     } else if (bidString.endsWith('b')) {
         return parseInt(bidString.slice(0, -1));
     } else {
@@ -268,11 +300,11 @@ function formatBidDisplay(bidString) {
         if (number === '0') {
             return 'Blind Nil';
         } else {
-            return `${number} (with Blind Nil)`;
+            return `${number} (Blind Nil)`;
         }
     } else if (bidString.endsWith('n')) {
         const number = bidString.slice(0, -1);
-        return `${number} (with Nil)`;
+        return `${number} (Nil)`;
     } else if (bidString.endsWith('b')) {
         return `${bidString.slice(0, -1)} (Blind)`;
     } else {

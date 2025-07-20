@@ -2,3 +2,6 @@
 /__pycache__
 database.db
 /__pycache__
+database.db-wal
+database.db-shm
+database.db

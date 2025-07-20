@@ -7,324 +7,294 @@
 {% block datetime %}{{ game.created_date | datetime }}{% endblock %}
 
 {% block content %}
-<!-- Professional scoreboard display -->
-<div class="mb-6">
-    <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-4 md:p-6 text-white">
-        <!-- Team names row -->
-        <div class="grid grid-cols-2 gap-4 mb-3">
-            <div class="text-center">
-                <div class="font-medium text-base md:text-lg leading-tight">{{ game.team1_player1 }} & {{ game.team1_player2 }}</div>
-            </div>
-            <div class="text-center">
-                <div class="font-medium text-base md:text-lg leading-tight">{{ game.team2_player1 }} & {{ game.team2_player2 }}</div>
-            </div>
-        </div>
-        
-        <!-- Score row -->
-        <div class="text-center">
-            <div class="text-4xl md:text-5xl font-bold font-mono tracking-wider">
-                {{ game.team1_final_score }}<span class="text-gray-400 mx-2 md:mx-3">-</span>{{ game.team2_final_score }}
-            </div>
-            {% if game.team1_bags > 0 or game.team2_bags > 0 %}
-            <div class="text-sm text-yellow-300 mt-2">
-                {% if game.team1_bags > 0 %}{{ game.team1_bags }} bags{% endif %}
-                {% if game.team1_bags > 0 and game.team2_bags > 0 %} | {% endif %}
-                {% if game.team2_bags > 0 %}{{ game.team2_bags }} bags{% endif %}
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+{{ team_scores(game) }}
 
-<!-- Total Differential Display -->
-{% if game.team1_final_score != game.team2_final_score %}
-<div class="text-center mb-6">
-    <div class="inline-block bg-gray-100 rounded-full px-4 py-2 text-sm md:text-base font-medium text-gray-700">
-        {% if game.team1_final_score > game.team2_final_score %}
-        <span class="text-blue-600">{{ game.team1_player1 }}/{{ game.team1_player2 }}</span> leads by 
-        <span class="font-bold text-blue-800">{{ game.team1_final_score - game.team2_final_score }}</span> points
-        {% else %}
-        <span class="text-purple-600">{{ game.team2_player1 }}/{{ game.team2_player2 }}</span> leads by 
-        <span class="font-bold text-purple-800">{{ game.team2_final_score - game.team1_final_score }}</span> points
-        {% endif %}
-    </div>
-</div>
-{% elif game.team1_final_score == game.team2_final_score and game.team1_final_score > 0 %}
-<div class="text-center mb-6">
-    <div class="inline-block bg-gray-100 rounded-full px-4 py-2 text-sm md:text-base font-medium text-gray-700">
-        Game is tied at {{ game.team1_final_score }} points
-    </div>
-</div>
-{% endif %}
-
-<!-- Define completed_rounds for use throughout template -->
-{% set completed_rounds = rounds | rejectattr('team1_actual', 'equalto', none) | list %}
-
-{% if game.status == 'completed' %}
-<div class="bg-green-50 rounded-lg border border-green-200 p-6 md:p-8">
+    <!-- Total Differential Display -->
+    {% if game.team1_final_score != game.team2_final_score %}
     <div class="text-center mb-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-green-800 mb-2">🏆 
-            {% if game.winner == 'Team 1' %}
-                {{ game.team1_player1 }} & {{ game.team1_player2 }} Win!
-            {% elif game.winner == 'Team 2' %}
-                {{ game.team2_player1 }} & {{ game.team2_player2 }} Win!
+        <div class="inline-block bg-gray-100 rounded-full px-4 py-2 text-sm font-medium text-gray-700">
+            {% if game.team1_final_score > game.team2_final_score %}
+            <span class="text-blue-600">{{ game.team1_player1 }}/{{ game.team1_player2 }}</span> leads by 
+            <span class="font-bold text-blue-800">{{ game.team1_final_score - game.team2_final_score }}</span> points
             {% else %}
-                {{ game.winner }} Win!
+            <span class="text-purple-600">{{ game.team2_player1 }}/{{ game.team2_player2 }}</span> leads by 
+            <span class="font-bold text-purple-800">{{ game.team2_final_score - game.team1_final_score }}</span> points
             {% endif %}
-        </h2>
-        <p class="text-green-600">Game completed on {{ game.completed_date | simple_datetime }}</p>
-    </div>
-    
-    <!-- Game Stats - Responsive layout -->
-    {% set total_rounds = completed_rounds | length %}
-    
-    <!-- Calculate stats using filters instead of loops -->
-    {% set team1_wins = [] %}
-    {% set team2_wins = [] %}
-    {% set team1_positive = [] %}
-    {% set team2_positive = [] %}
-    {% set team1_negative = [] %}
-    {% set team2_negative = [] %}
-    {% set team1_nil_tries = [] %}
-    {% set team2_nil_tries = [] %}
-    {% set team1_nil_made = [] %}
-    {% set team2_nil_made = [] %}
-    
-    {% for round in completed_rounds %}
-        {% if round.team1_points|int > round.team2_points|int %}
-            {% set _ = team1_wins.append(round) %}
-        {% elif round.team2_points|int > round.team1_points|int %}
-            {% set _ = team2_wins.append(round) %}
-        {% endif %}
-        
-        {% if round.team1_points|int > 0 %}
-            {% set _ = team1_positive.append(round.team1_points|int) %}
-        {% elif round.team1_points|int < 0 %}
-            {% set _ = team1_negative.append(round.team1_points|int) %}
-        {% endif %}
-        
-        {% if round.team2_points|int > 0 %}
-            {% set _ = team2_positive.append(round.team2_points|int) %}
-        {% elif round.team2_points|int < 0 %}
-            {% set _ = team2_negative.append(round.team2_points|int) %}
-        {% endif %}
-        
-        {% if round.team1_bid.endswith('n') %}
-            {% set _ = team1_nil_tries.append(round) %}
-            {% if round.team1_actual|int == 0 %}
-                {% set _ = team1_nil_made.append(round) %}
-            {% endif %}
-        {% endif %}
-        
-        {% if round.team2_bid.endswith('n') %}
-            {% set _ = team2_nil_tries.append(round) %}
-            {% if round.team2_actual|int == 0 %}
-                {% set _ = team2_nil_made.append(round) %}
-            {% endif %}
-        {% endif %}
-    {% endfor %}
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <div class="bg-white rounded-lg p-4 border border-green-200">
-            <h4 class="font-semibold text-green-800 mb-3">📊 Game Stats</h4>
-            <div class="space-y-2 text-sm text-green-700">
-                <div class="flex justify-between">
-                    <span>Total Rounds:</span>
-                    <span class="font-medium">{{ total_rounds }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Score Margin:</span>
-                    <span class="font-medium">{{ (game.team1_final_score - game.team2_final_score) | abs }}</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg p-4 border border-green-200">
-            <h4 class="font-semibold text-green-800 mb-3">🎯 Team 1</h4>
-            <div class="space-y-1 text-sm text-green-700">
-                <div class="flex justify-between">
-                    <span>Rounds Won:</span>
-                    <span class="font-medium text-blue-600">{{ team1_wins|length }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Points Won:</span>
-                    <span class="font-medium text-green-600">+{{ team1_positive|sum }}</span>
-                </div>
-                {% if team1_negative|sum < 0 %}
-                <div class="flex justify-between">
-                    <span>Points Lost:</span>
-                    <span class="font-medium text-red-600">{{ team1_negative|sum }}</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg p-4 border border-green-200">
-            <h4 class="font-semibold text-green-800 mb-3">🎯 Team 2</h4>
-            <div class="space-y-1 text-sm text-green-700">
-                <div class="flex justify-between">
-                    <span>Rounds Won:</span>
-                    <span class="font-medium text-purple-600">{{ team2_wins|length }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Points Won:</span>
-                    <span class="font-medium text-green-600">+{{ team2_positive|sum }}</span>
-                </div>
-                {% if team2_negative|sum < 0 %}
-                <div class="flex justify-between">
-                    <span>Points Lost:</span>
-                    <span class="font-medium text-red-600">{{ team2_negative|sum }}</span>
-                </div>
-                {% endif %}
-            </div>
         </div>
     </div>
-    
-    {% if team1_nil_tries|length > 0 or team2_nil_tries|length > 0 %}
-    <div class="bg-white rounded-lg p-4 border border-green-200 mt-4">
-        <h4 class="font-semibold text-green-800 mb-3">🎭 Nil Bid Performance</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-700">
-            {% if team1_nil_tries|length > 0 %}
-            <div class="flex justify-between">
-                <span>{{ game.team1_player1 }}/{{ game.team1_player2 }}:</span>
-                <span class="font-medium">{{ team1_nil_made|length }}/{{ team1_nil_tries|length }} successful</span>
-            </div>
-            {% endif %}
-            {% if team2_nil_tries|length > 0 %}
-            <div class="flex justify-between">
-                <span>{{ game.team2_player1 }}/{{ game.team2_player2 }}:</span>
-                <span class="font-medium">{{ team2_nil_made|length }}/{{ team2_nil_tries|length }} successful</span>
-            </div>
-            {% endif %}
+    {% elif game.team1_final_score == game.team2_final_score and game.team1_final_score > 0 %}
+    <div class="text-center mb-6">
+        <div class="inline-block bg-gray-100 rounded-full px-4 py-2 text-sm font-medium text-gray-700">
+            Game is tied at {{ game.team1_final_score }} points
         </div>
     </div>
     {% endif %}
-</div>
-{% else %}
-<div class="text-center">
-    <!-- Check if there's a pending round (bids entered but no scores) -->
-    {% set pending_round = rounds | selectattr('team1_actual', 'equalto', none) | first %}
-    
-    {% if pending_round %}
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 md:p-6 mb-4">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div class="mb-4 md:mb-0">
-                <h4 class="font-semibold text-yellow-800">Round {{ pending_round.round_number }} - Bids Entered</h4>
-                <p class="text-yellow-700 text-sm">{{ game.team1_player1 }}/{{ game.team1_player2 }}: {{ pending_round.team1_bid }} | {{ game.team2_player1 }}/{{ game.team2_player2 }}: {{ pending_round.team2_bid }}</p>
-            </div>
-            <a href="{{ url_for('enter_scores', game_id=game.id) }}" class="bg-spades-warning text-white px-4 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors btn-animate block md:inline-block text-center">
-                📊 Enter Scores
-            </a>
-        </div>
-    </div>
-    {% else %}
-    <a href="{{ url_for('add_round', game_id=game.id) }}" class="bg-spades-success text-white px-6 py-3 md:px-8 md:py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors btn-animate inline-block text-lg">
-        🎯 Enter Bids
-    </a>
-    {% endif %}
-</div>
-{% endif %}
 
-{% if completed_rounds %}
-<div class="mt-8 md:mt-12">
-    <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6">📊 Round History</h3>
-    <div class="space-y-4">
+    <!-- Define completed_rounds for use throughout template -->
+    {% set completed_rounds = rounds | rejectattr('team1_actual', 'equalto', none) | list %}
+
+    {% if game.status == 'completed' %}
+    <div class="bg-green-50 rounded-lg border border-green-200 p-6">
+        <div class="text-center mb-4">
+            <h2 class="text-2xl font-bold text-green-800 mb-2">🏆 
+                {% if game.winner == 'Team 1' %}
+                    {{ game.team1_player1 }} & {{ game.team1_player2 }} Win!
+                {% elif game.winner == 'Team 2' %}
+                    {{ game.team2_player1 }} & {{ game.team2_player2 }} Win!
+                {% else %}
+                    {{ game.winner }} Win!
+                {% endif %}
+            </h2>
+            <p class="text-green-600">Game completed on {{ game.completed_date | simple_datetime }}</p>
+        </div>
+        
+        <!-- Game Stats -->
+        {% set total_rounds = completed_rounds | length %}
+        
+        <!-- Calculate stats using filters instead of loops -->
+        {% set team1_wins = [] %}
+        {% set team2_wins = [] %}
+        {% set team1_positive = [] %}
+        {% set team2_positive = [] %}
+        {% set team1_negative = [] %}
+        {% set team2_negative = [] %}
+        {% set team1_nil_tries = [] %}
+        {% set team2_nil_tries = [] %}
+        {% set team1_nil_made = [] %}
+        {% set team2_nil_made = [] %}
+        
         {% for round in completed_rounds %}
-        <div id="round{{ round.round_number }}" class="spades-card rounded-lg p-4 md:p-6 transition-all duration-200">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-                <div class="font-semibold text-gray-800 mb-2 sm:mb-0">Round {{ round.round_number }}</div>
-                <div>
-                    {% if round.team1_points > round.team2_points %}
-                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">{{ game.team1_player1 }}/{{ game.team1_player2 }} +{{ round.team1_points - round.team2_points }}</span>
-                    {% elif round.team2_points > round.team1_points %}
-                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">{{ game.team2_player1 }}/{{ game.team2_player2 }} +{{ round.team2_points - round.team1_points }}</span>
-                    {% else %}
-                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-medium">Tie</span>
-                    {% endif %}
+            {% if round.team1_points|int > round.team2_points|int %}
+                {% set _ = team1_wins.append(round) %}
+            {% elif round.team2_points|int > round.team1_points|int %}
+                {% set _ = team2_wins.append(round) %}
+            {% endif %}
+            
+            {% if round.team1_points|int > 0 %}
+                {% set _ = team1_positive.append(round.team1_points|int) %}
+            {% elif round.team1_points|int < 0 %}
+                {% set _ = team1_negative.append(round.team1_points|int) %}
+            {% endif %}
+            
+            {% if round.team2_points|int > 0 %}
+                {% set _ = team2_positive.append(round.team2_points|int) %}
+            {% elif round.team2_points|int < 0 %}
+                {% set _ = team2_negative.append(round.team2_points|int) %}
+            {% endif %}
+            
+            {% if round.team1_bid.endswith('n') %}
+                {% set _ = team1_nil_tries.append(round) %}
+                {% if round.team1_actual|int == 0 %}
+                    {% set _ = team1_nil_made.append(round) %}
+                {% endif %}
+            {% endif %}
+            
+            {% if round.team2_bid.endswith('n') %}
+                {% set _ = team2_nil_tries.append(round) %}
+                {% if round.team2_actual|int == 0 %}
+                    {% set _ = team2_nil_made.append(round) %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        <div class="space-y-4">
+            <div class="bg-white rounded-lg p-4 border border-green-200">
+                <h4 class="font-semibold text-green-800 mb-3">📊 Game Stats</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm text-green-700">
+                    <div class="flex justify-between">
+                        <span>Total Rounds:</span>
+                        <span class="font-medium">{{ total_rounds }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Score Margin:</span>
+                        <span class="font-medium">{{ (game.team1_final_score - game.team2_final_score) | abs }}</span>
+                    </div>
                 </div>
             </div>
             
-            <!-- Responsive round details -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
-                <div class="bg-blue-50 p-3 md:p-4 rounded border border-blue-200">
-                    <div class="text-center mb-4">
-                        <div class="text-2xl md:text-3xl font-bold {{ 'text-green-600' if round.team1_points > 0 else 'text-red-600' if round.team1_points < 0 else 'text-blue-900' }}">
-                            {{ '+' if round.team1_points > 0 else '' }}{{ round.team1_points }}
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1">Total: {{ round.team1_total }}</div>
-                    </div>
-                    <div class="space-y-1 text-xs">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-blue-700">Bid: {{ round.team1_bid | format_bid_display }}</span>
-                            <span class="text-blue-700">Made: {{ round.team1_actual }}</span>
-                        </div>
-                        {% set team1_breakdown = get_score_breakdown_detailed_template({
-                            'bid_points': round.team1_bid_points,
-                            'nil_bonus': round.team1_nil_bonus,
-                            'blind_nil_bonus': round.team1_blind_nil_bonus,
-                            'blind_bonus': round.team1_blind_bonus,
-                            'bag_points': round.team1_bag_points,
-                            'bag_penalty': round.team1_bag_penalty
-                        }) %}
-                        {% for item in team1_breakdown %}
+            <div class="bg-white rounded-lg p-4 border border-green-200">
+                <h4 class="font-semibold text-green-800 mb-3">🎯 Game Breakdown</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm text-green-700">
+                    <div class="space-y-1">
+                        <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
                         <div class="flex justify-between">
-                            <span>{{ item.label }}:</span>
-                            <span class="{{ item.color }}">{{ item.value }}</span>
+                            <span>Rounds Won:</span>
+                            <span class="font-medium text-blue-600">{{ team1_wins|length }}</span>
                         </div>
-                        {% endfor %}
-                        <div class="flex justify-between font-semibold border-t pt-1">
-                            <span>Round total:</span>
-                            <span class="{{ 'text-green-600' if round.team1_points > 0 else 'text-red-600' if round.team1_points < 0 else 'text-gray-900' }}">{{ '+' if round.team1_points > 0 else '' }}{{ round.team1_points }}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-purple-50 p-3 md:p-4 rounded border border-purple-200">
-                    <div class="text-center mb-4">
-                        <div class="text-2xl md:text-3xl font-bold {{ 'text-green-600' if round.team2_points > 0 else 'text-red-600' if round.team2_points < 0 else 'text-blue-900' }}">
-                            {{ '+' if round.team2_points > 0 else '' }}{{ round.team2_points }}
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1">Total: {{ round.team2_total }}</div>
-                    </div>
-                    <div class="space-y-1 text-xs">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-purple-700">Bid: {{ round.team2_bid | format_bid_display }}</span>
-                            <span class="text-purple-700">Made: {{ round.team2_actual }}</span>
-                        </div>
-                        {% set team2_breakdown = get_score_breakdown_detailed_template({
-                            'bid_points': round.team2_bid_points,
-                            'nil_bonus': round.team2_nil_bonus,
-                            'blind_nil_bonus': round.team2_blind_nil_bonus,
-                            'blind_bonus': round.team2_blind_bonus,
-                            'bag_points': round.team2_bag_points,
-                            'bag_penalty': round.team2_bag_penalty
-                        }) %}
-                        {% for item in team2_breakdown %}
                         <div class="flex justify-between">
-                            <span>{{ item.label }}:</span>
-                            <span class="{{ item.color }}">{{ item.value }}</span>
+                            <span>Points Won:</span>
+                            <span class="font-medium text-green-600">+{{ team1_positive|sum }}</span>
                         </div>
-                        {% endfor %}
-                        <div class="flex justify-between font-semibold border-t pt-1">
-                            <span>Round total:</span>
-                            <span class="{{ 'text-green-600' if round.team2_points > 0 else 'text-red-600' if round.team2_points < 0 else 'text-gray-900' }}">{{ '+' if round.team2_points > 0 else '' }}{{ round.team2_points }}</span>
+                        {% if team1_negative|sum < 0 %}
+                        <div class="flex justify-between">
+                            <span>Points Lost:</span>
+                            <span class="font-medium text-red-600">{{ team1_negative|sum }}</span>
                         </div>
+                        {% endif %}
+                    </div>
+                    <div class="space-y-1">
+                        <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
+                        <div class="flex justify-between">
+                            <span>Rounds Won:</span>
+                            <span class="font-medium text-purple-600">{{ team2_wins|length }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Points Won:</span>
+                            <span class="font-medium text-green-600">+{{ team2_positive|sum }}</span>
+                        </div>
+                        {% if team2_negative|sum < 0 %}
+                        <div class="flex justify-between">
+                            <span>Points Lost:</span>
+                            <span class="font-medium text-red-600">{{ team2_negative|sum }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
+        
+        {% if team1_nil_tries|length > 0 or team2_nil_tries|length > 0 %}
+        <div class="bg-white rounded-lg p-4 border border-green-200">
+            <h4 class="font-semibold text-green-800 mb-3">🎭 Nil Bid Performance</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm text-green-700">
+                {% if team1_nil_tries|length > 0 %}
+                <div class="flex justify-between">
+                    <span>{{ game.team1_player1 }}/{{ game.team1_player2 }}:</span>
+                    <span class="font-medium">{{ team1_nil_made|length }}/{{ team1_nil_tries|length }} successful</span>
+                </div>
+                {% endif %}
+                {% if team2_nil_tries|length > 0 %}
+                <div class="flex justify-between">
+                    <span>{{ game.team2_player1 }}/{{ game.team2_player2 }}:</span>
+                    <span class="font-medium">{{ team2_nil_made|length }}/{{ team2_nil_tries|length }} successful</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
+    {% else %}
+    <div class="text-center">
+        <!-- Check if there's a pending round (bids entered but no scores) -->
+        {% set pending_round = rounds | selectattr('team1_actual', 'equalto', none) | first %}
+        
+        {% if pending_round %}
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold text-yellow-800">Round {{ pending_round.round_number }} - Bids Entered</h4>
+                    <p class="text-yellow-700 text-sm">{{ game.team1_player1 }}/{{ game.team1_player2 }}: {{ pending_round.team1_bid }} | {{ game.team2_player1 }}/{{ game.team2_player2 }}: {{ pending_round.team2_bid }}</p>
+                </div>
+                <a href="{{ url_for('enter_scores', game_id=game.id) }}" class="bg-spades-warning text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600 transition-colors btn-animate">
+                    📊 Enter Scores
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <a href="{{ url_for('add_round', game_id=game.id) }}" class="bg-spades-success text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors btn-animate inline-block">
+            🎯 Enter Bids
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+
+{% if completed_rounds %}
+<div class="mt-8">
+    <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Round History</h3>
+    {% for round in completed_rounds %}
+    <div id="round{{ round.round_number }}" class="spades-card rounded-lg p-4 mb-3 transition-all duration-200">
+        <div class="flex justify-between items-center mb-3">
+            <div class="font-semibold text-gray-800">Round {{ round.round_number }}</div>
+            <div>
+                {% if round.team1_points > round.team2_points %}
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">{{ game.team1_player1 }}/{{ game.team1_player2 }} +{{ round.team1_points - round.team2_points }}</span>
+                {% elif round.team2_points > round.team1_points %}
+                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">{{ game.team2_player1 }}/{{ game.team2_player2 }} +{{ round.team2_points - round.team1_points }}</span>
+                {% else %}
+                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-medium">Tie</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                <div class="text-center mb-4">
+                    <div class="text-2xl font-bold {{ 'text-green-600' if round.team1_points > 0 else 'text-red-600' if round.team1_points < 0 else 'text-blue-900' }}">
+                        {{ '+' if round.team1_points > 0 else '' }}{{ round.team1_points }}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Total: {{ round.team1_total }}</div>
+                </div>
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-blue-700">Bid: {{ round.team1_bid | format_bid_display }}</span>
+                        <span class="text-blue-700">Made: {{ round.team1_actual }}</span>
+                    </div>
+                    {% set team1_breakdown = get_score_breakdown_detailed_template({
+                        'bid_points': round.team1_bid_points,
+                        'nil_bonus': round.team1_nil_bonus,
+                        'blind_nil_bonus': round.team1_blind_nil_bonus,
+                        'blind_bonus': round.team1_blind_bonus,
+                        'bag_points': round.team1_bag_points,
+                        'bag_penalty': round.team1_bag_penalty
+                    }) %}
+                    {% for item in team1_breakdown %}
+                    <div class="flex justify-between">
+                        <span>{{ item.label }}:</span>
+                        <span class="{{ item.color }}">{{ item.value }}</span>
+                    </div>
+                    {% endfor %}
+                    <div class="flex justify-between font-semibold border-t pt-1">
+                        <span>Round total:</span>
+                        <span class="{{ 'text-green-600' if round.team1_points > 0 else 'text-red-600' if round.team1_points < 0 else 'text-gray-900' }}">{{ '+' if round.team1_points > 0 else '' }}{{ round.team1_points }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-purple-50 p-3 rounded border border-purple-200">
+                <div class="text-center mb-4">
+                    <div class="text-2xl font-bold {{ 'text-green-600' if round.team2_points > 0 else 'text-red-600' if round.team2_points < 0 else 'text-blue-900' }}">
+                        {{ '+' if round.team2_points > 0 else '' }}{{ round.team2_points }}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Total: {{ round.team2_total }}</div>
+                </div>
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-purple-700">Bid: {{ round.team2_bid | format_bid_display }}</span>
+                        <span class="text-purple-700">Made: {{ round.team2_actual }}</span>
+                    </div>
+                    {% set team2_breakdown = get_score_breakdown_detailed_template({
+                        'bid_points': round.team2_bid_points,
+                        'nil_bonus': round.team2_nil_bonus,
+                        'blind_nil_bonus': round.team2_blind_nil_bonus,
+                        'blind_bonus': round.team2_blind_bonus,
+                        'bag_points': round.team2_bag_points,
+                        'bag_penalty': round.team2_bag_penalty
+                    }) %}
+                    {% for item in team2_breakdown %}
+                    <div class="flex justify-between">
+                        <span>{{ item.label }}:</span>
+                        <span class="{{ item.color }}">{{ item.value }}</span>
+                    </div>
+                    {% endfor %}
+                    <div class="flex justify-between font-semibold border-t pt-1">
+                        <span>Round total:</span>
+                        <span class="{{ 'text-green-600' if round.team2_points > 0 else 'text-red-600' if round.team2_points < 0 else 'text-gray-900' }}">{{ '+' if round.team2_points > 0 else '' }}{{ round.team2_points }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% endif %}
 
-<!-- Responsive action buttons -->
-<div class="text-center mt-8 md:mt-12 space-y-4 md:space-y-6 border-t-2 pt-6 md:pt-8">
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="{{ url_for('edit_game', game_id=game.id) }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors btn-animate text-center">
+<div class="text-center mt-8 space-y-8 border-t-2 pt-6">
+    <div>
+        <a href="{{ url_for('edit_game', game_id=game.id) }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors btn-animate">
             ⚙️ Edit Game Settings
         </a>
-        <a href="{{ url_for('dashboard') }}" class="bg-spades-secondary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors btn-animate text-center">
+    </div>
+    <div>
+        <a href="{{ url_for('dashboard') }}" class="bg-spades-secondary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors btn-animate">
             ← Back to Dashboard
         </a>
     </div>
