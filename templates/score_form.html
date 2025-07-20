@@ -9,26 +9,28 @@
 {% block content %}
 {{ team_scores(game) }}
 
-<div class="mb-4">
-    <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Round {{ round.round_number }}: Enter Tricks Taken</h3>
+<div class="mb-4 md:mb-6">
+    <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-4">📊 Round {{ round.round_number }}: Enter Tricks Taken</h3>
 </div>
 
-<form method="POST" id="scoreForm" class="space-y-6">
-    <div class="bg-green-50 rounded-lg p-4 border border-green-200">
-        <div class="space-y-6">
+<form method="POST" id="scoreForm" class="space-y-6 md:space-y-8">
+    <div class="bg-green-50 rounded-lg p-4 md:p-6 border border-green-200">
+        <div class="space-y-6 md:space-y-8">
+            <!-- Team 1 Score Entry -->
             <div>
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-sm font-medium text-gray-700">{{ game.team1_player1 }}/{{ game.team1_player2 }}</span>
-                    <div class="flex items-center space-x-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                    <span class="text-sm md:text-base font-medium text-gray-700 mb-2 sm:mb-0">{{ game.team1_player1 }}/{{ game.team1_player2 }}</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0">
                         <span class="text-sm text-blue-700 bg-blue-100 px-2 py-1 rounded">Bid: {{ round.team1_bid | format_bid_display }}</span>
-                        <a href="{{ url_for('edit_bids', game_id=game.id, round_id=round.id) }}" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 px-2 py-1 rounded transition-colors">
+                        <a href="{{ url_for('edit_bids', game_id=game.id, round_id=round.id) }}" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 px-2 py-1 rounded transition-colors text-center">
                             ✏️ Edit
                         </a>
                     </div>
                 </div>
-                <div class="grid grid-cols-7 gap-2">
+                <!-- Responsive button grid for trick selection -->
+                <div class="grid grid-cols-7 gap-1 md:gap-2">
                     {% for i in range(14) %}
-                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors btn-animate" onclick="setActual('team1', {{ i }})">
+                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-2 md:py-3 px-1 md:px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors btn-animate text-sm md:text-base" onclick="setActual('team1', {{ i }})">
                         {{ i }}
                     </button>
                     {% endfor %}
@@ -57,19 +59,21 @@
                 </div>
             </div>
 
+            <!-- Team 2 Score Entry -->
             <div>
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-sm font-medium text-gray-700">{{ game.team2_player1 }}/{{ game.team2_player2 }}</span>
-                    <div class="flex items-center space-x-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                    <span class="text-sm md:text-base font-medium text-gray-700 mb-2 sm:mb-0">{{ game.team2_player1 }}/{{ game.team2_player2 }}</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0">
                         <span class="text-sm text-purple-700 bg-purple-100 px-2 py-1 rounded">Bid: {{ round.team2_bid | format_bid_display }}</span>
-                        <a href="{{ url_for('edit_bids', game_id=game.id, round_id=round.id) }}" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 px-2 py-1 rounded transition-colors">
+                        <a href="{{ url_for('edit_bids', game_id=game.id, round_id=round.id) }}" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 px-2 py-1 rounded transition-colors text-center">
                             ✏️ Edit
                         </a>
                     </div>
                 </div>
-                <div class="grid grid-cols-7 gap-2">
+                <!-- Responsive button grid for trick selection -->
+                <div class="grid grid-cols-7 gap-1 md:gap-2">
                     {% for i in range(14) %}
-                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors btn-animate" onclick="setActual('team2', {{ i }})">
+                    <button type="button" class="bg-white border-2 border-gray-300 rounded-lg py-2 md:py-3 px-1 md:px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors btn-animate text-sm md:text-base" onclick="setActual('team2', {{ i }})">
                         {{ i }}
                     </button>
                     {% endfor %}
@@ -100,6 +104,7 @@
         </div>
     </div>
 
+    <!-- Validation Error -->
     <div id="validation_error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4">
         <div class="flex items-center">
             <div class="text-red-600 mr-2">⚠️</div>
@@ -107,28 +112,30 @@
         </div>
     </div>
 
-    <div id="score_preview" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 class="font-semibold text-gray-800 mb-3">📊 Round Score Preview</h4>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div class="bg-blue-50 p-3 rounded border border-blue-200">
+    <!-- Score Preview - Responsive Layout -->
+    <div id="score_preview" class="bg-gray-50 border border-gray-200 rounded-lg p-4 md:p-6">
+        <h4 class="font-semibold text-gray-800 mb-4 md:mb-6">📊 Round Score Preview</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 p-3 md:p-4 rounded border border-blue-200">
                 <div class="font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
-                <div class="text-blue-700 mb-1">Bid: {{ round.team1_bid | format_bid_display }} | Made: <span id="team1_made_display">-</span></div>
-                <div id="team1_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
+                <div class="text-blue-700 mb-1 text-sm">Bid: {{ round.team1_bid | format_bid_display }} | Made: <span id="team1_made_display">-</span></div>
+                <div id="team1_score_preview" class="text-lg md:text-xl font-bold text-gray-400">Select tricks</div>
             </div>
-            <div class="bg-purple-50 p-3 rounded border border-purple-200">
+            <div class="bg-purple-50 p-3 md:p-4 rounded border border-purple-200">
                 <div class="font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
-                <div class="text-purple-700 mb-1">Bid: {{ round.team2_bid | format_bid_display }} | Made: <span id="team2_made_display">-</span></div>
-                <div id="team2_score_preview" class="text-lg font-bold text-gray-400">Select tricks</div>
+                <div class="text-purple-700 mb-1 text-sm">Bid: {{ round.team2_bid | format_bid_display }} | Made: <span id="team2_made_display">-</span></div>
+                <div id="team2_score_preview" class="text-lg md:text-xl font-bold text-gray-400">Select tricks</div>
             </div>
         </div>
     </div>
 
-    <button type="submit" class="w-full bg-spades-success text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-spades-success focus:ring-offset-2 transition-colors btn-animate disabled:opacity-50 disabled:cursor-not-allowed" id="submitBtn" disabled>
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-spades-success text-white py-3 md:py-4 px-4 md:px-6 rounded-lg font-semibold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-spades-success focus:ring-offset-2 transition-colors btn-animate disabled:opacity-50 disabled:cursor-not-allowed text-lg" id="submitBtn" disabled>
         ✅ Complete Round
     </button>
 </form>
 
-<div class="text-center mt-6">
+<div class="text-center mt-6 md:mt-8">
     <a href="{{ url_for('game', game_id=game.id) }}" class="text-spades-secondary hover:text-blue-600 font-medium">← Back to Game</a>
 </div>
 
@@ -167,15 +174,12 @@ function setupSpecialBidToggles(team, bidString) {
     
     // Show relevant toggles based on raw bid string format
     if (bidString.endsWith('bn')) {
-        // Blind nil combination (e.g., "4bn")
         blindNilToggle.style.display = 'block';
         hasSpecialBid = true;
     } else if (bidString.endsWith('n')) {
-        // Nil combination (e.g., "4n")
         nilToggle.style.display = 'block';
         hasSpecialBid = true;
     } else if (bidString.endsWith('b')) {
-        // Blind bid (e.g., "4b")
         blindToggle.style.display = 'block';
         hasSpecialBid = true;
     }
@@ -229,7 +233,6 @@ function highlightComplementaryScore(selectedTeam, selectedValue) {
     
     // Only highlight if the complementary value is valid (0-13)
     if (complementaryValue >= 0 && complementaryValue <= 13) {
-        // Find and highlight the complementary button
         const complementaryButton = document.querySelector(`button[onclick="setActual('${otherTeam}', ${complementaryValue})"]`);
         if (complementaryButton) {
             complementaryButton.classList.add('bg-yellow-100', 'border-yellow-400', 'ring-2', 'ring-yellow-300');
@@ -253,8 +256,6 @@ function checkFormValidity() {
         if (team1Actual + team2Actual === 13) {
             submitBtn.disabled = false;
             validationError.classList.add('hidden');
-            
-            // Clear any remaining highlights since both teams are selected
             clearAllHighlights();
         } else {
             submitBtn.disabled = true;
@@ -288,10 +289,10 @@ function updateScorePreview() {
     if (team1Actual !== undefined) {
         const team1Score = calculateRoundScore(team1Bid, team1Actual, 'team1');
         team1Element.textContent = team1Score >= 0 ? `+${team1Score}` : `${team1Score}`;
-        team1Element.className = team1Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+        team1Element.className = team1Score >= 0 ? 'text-lg md:text-xl font-bold text-green-600' : 'text-lg md:text-xl font-bold text-red-600';
     } else {
         team1Element.textContent = 'Select tricks';
-        team1Element.className = 'text-lg font-bold text-gray-400';
+        team1Element.className = 'text-lg md:text-xl font-bold text-gray-400';
     }
     
     // Update Team 2 score preview
@@ -299,20 +300,10 @@ function updateScorePreview() {
     if (team2Actual !== undefined) {
         const team2Score = calculateRoundScore(team2Bid, team2Actual, 'team2');
         team2Element.textContent = team2Score >= 0 ? `+${team2Score}` : `${team2Score}`;
-        team2Element.className = team2Score >= 0 ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+        team2Element.className = team2Score >= 0 ? 'text-lg md:text-xl font-bold text-green-600' : 'text-lg md:text-xl font-bold text-red-600';
     } else {
         team2Element.textContent = 'Select tricks';
-        team2Element.className = 'text-lg font-bold text-gray-400';
-    }
-}
-
-function getBidValue(bidString) {
-    if (bidString.endsWith('bn') || bidString.endsWith('n')) {
-        return 0;
-    } else if (bidString.endsWith('b')) {
-        return parseInt(bidString.slice(0, -1));
-    } else {
-        return parseInt(bidString);
+        team2Element.className = 'text-lg md:text-xl font-bold text-gray-400';
     }
 }
 
@@ -330,64 +321,41 @@ function calculateRoundScore(bidString, actual, team) {
     let totalScore = 0;
     
     if (isBlindNil) {
-        // Combination blind nil (e.g., "5bn")
         const bidValue = parseInt(bidString.slice(0, -2));
-        
         if (bidValue === 0) {
-            // Pure blind nil ("0bn")
             totalScore = blindNilSuccess ? 200 : -200;
         } else {
-            // Base score for the regular bid part
             if (actual >= bidValue) {
                 totalScore += (bidValue * 10) + (actual - bidValue);
             } else {
                 totalScore -= (bidValue * 10);
             }
-            
-            // Add blind nil bonus/penalty
             totalScore += blindNilSuccess ? 200 : -200;
         }
-        
     } else if (isNil) {
-        // Combination nil (e.g., "5n")
         const bidValue = parseInt(bidString.slice(0, -1));
-        
         if (bidValue === 0) {
-            // Pure nil ("0n")
             totalScore = nilSuccess ? 100 : -100;
         } else {
-            // Base score for the regular bid part
             if (actual >= bidValue) {
                 totalScore += (bidValue * 10) + (actual - bidValue);
             } else {
                 totalScore -= (bidValue * 10);
             }
-            
-            // Add nil bonus/penalty
             totalScore += nilSuccess ? 100 : -100;
         }
-        
     } else if (isBlind) {
-        // Blind bid (e.g., "5b")
         const bidValue = parseInt(bidString.slice(0, -1));
-        
         if (blindSuccess) {
-            // Successful blind bid: doubled points + overtricks
             totalScore = (bidValue * 10 * 2) + (actual - bidValue);
         } else {
-            // Failed blind bid: doubled penalty
             totalScore = -(bidValue * 10 * 2);
         }
-        
     } else {
-        // Regular bid
         const bidValue = parseInt(bidString);
-        
         if (actual >= bidValue) {
-            // Made the bid: base score + bags
             totalScore = (bidValue * 10) + (actual - bidValue);
         } else {
-            // Failed the bid: negative base score
             totalScore = -(bidValue * 10);
         }
     }

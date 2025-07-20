@@ -12,88 +12,133 @@
 </div>
 
 {% if active_games %}
-<h2 class="text-xl font-bold text-gray-800 mb-4">🎮 Active Games</h2>
-{% for game in active_games %}
-<div class="spades-card rounded-lg p-4 mb-4 transition-all duration-200">
-    <div class="flex justify-between items-start mb-3">
-        <div class="font-semibold text-gray-800">
-            {{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}
+<h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">🎮 Active Games</h2>
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+    {% for game in active_games %}
+    <div class="spades-card rounded-lg p-4 md:p-6 transition-all duration-200 hover:shadow-lg">
+        <!-- Scoreboard-style header -->
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-center">
+                <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Active Game</div>
+                {% if game.display_status == 'completed' %}
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">Complete</span>
+                {% else %}
+                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium">In Progress</span>
+                {% endif %}
+            </div>
         </div>
-        <div>
-            {% if game.display_status == 'completed' %}
-                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">Complete</span>
-            {% else %}
-                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium">In Progress</span>
+        
+        <!-- Scoreboard display -->
+        <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-4 mb-4 text-white">
+            <!-- Team names row -->
+            <div class="grid grid-cols-2 gap-4 mb-3">
+                <div class="text-center">
+                    <div class="text-xs opacity-75 mb-1">TEAM 1</div>
+                    <div class="font-medium text-sm leading-tight">{{ game.team1_player1 }} & {{ game.team1_player2 }}</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs opacity-75 mb-1">TEAM 2</div>
+                    <div class="font-medium text-sm leading-tight">{{ game.team2_player1 }} & {{ game.team2_player2 }}</div>
+                </div>
+            </div>
+            
+            <!-- Score row -->
+            <div class="text-center">
+                <div class="text-3xl md:text-4xl font-bold font-mono tracking-wider">
+                    {{ game.team1_final_score }}<span class="text-gray-400 mx-2 md:mx-3">-</span>{{ game.team2_final_score }}
+                </div>
+                {% if game.team1_bags > 0 or game.team2_bags > 0 %}
+                <div class="text-xs text-yellow-300 mt-2">
+                    {% if game.team1_bags > 0 %}{{ game.team1_bags }} bags{% endif %}
+                    {% if game.team1_bags > 0 and game.team2_bags > 0 %} | {% endif %}
+                    {% if game.team2_bags > 0 %}{{ game.team2_bags }} bags{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-2">
+            <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate text-center">
+                View Game
+            </a>
+            {% if game.display_status != 'completed' %}
+            <a href="{{ url_for('add_round', game_id=game.id) }}" class="bg-spades-success text-white px-4 py-2 rounded font-medium hover:bg-green-600 transition-colors btn-animate text-center">
+                Enter Bids
+            </a>
             {% endif %}
         </div>
     </div>
-    <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-        <div>
-            <strong>Team 1:</strong> {{ game.team1_final_score }} points
-            {% if game.team1_bags > 0 %}<span class="text-yellow-600">({{ game.team1_bags }} bags)</span>{% endif %}
-        </div>
-        <div>
-            <strong>Team 2:</strong> {{ game.team2_final_score }} points
-            {% if game.team2_bags > 0 %}<span class="text-yellow-600">({{ game.team2_bags }} bags)</span>{% endif %}
-        </div>
-    </div>
-    <div class="flex gap-2">
-        <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate">
-            View Game
-        </a>
-        {% if game.display_status != 'completed' %}
-        <a href="{{ url_for('add_round', game_id=game.id) }}" class="bg-spades-success text-white px-4 py-2 rounded font-medium hover:bg-green-600 transition-colors btn-animate">
-            Enter Bids
-        </a>
-        {% endif %}
-    </div>
+    {% endfor %}
 </div>
-{% endfor %}
 {% endif %}
 
 {% if completed_games %}
-<h2 class="text-xl font-bold text-gray-800 mb-4 mt-8">🏆 Recent Completed Games</h2>
-{% for game in completed_games %}
-<div class="spades-card rounded-lg p-4 mb-4 transition-all duration-200">
-    <div class="flex justify-between items-center mb-3">
-        <div class="font-semibold text-gray-800">
-            {{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}
+<h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 mt-8 md:mt-12">🏆 Recent Completed Games</h2>
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+    {% for game in completed_games %}
+    <div class="spades-card rounded-lg p-4 md:p-6 transition-all duration-200 hover:shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
+            <div class="font-semibold text-gray-800 mb-2 sm:mb-0">
+                {{ game.team1_player1 }}/{{ game.team1_player2 }} <br class="sm:hidden">
+                <span class="text-gray-600">vs</span> {{ game.team2_player1 }}/{{ game.team2_player2 }}
+            </div>
+            <div class="text-green-600 font-semibold text-sm">
+                {% if game.winner == 'Team 1' %}
+                    {{ game.team1_player1 }}/{{ game.team1_player2 }} Won
+                {% elif game.winner == 'Team 2' %}
+                    {{ game.team2_player1 }}/{{ game.team2_player2 }} Won
+                {% else %}
+                    {{ game.winner }} Won
+                {% endif %}
+            </div>
         </div>
-        <div class="text-green-600 font-semibold">
-            {% if game.winner == 'Team 1' %}
-                {{ game.team1_player1 }}/{{ game.team1_player2 }} Won
-            {% elif game.winner == 'Team 2' %}
-                {{ game.team2_player1 }}/{{ game.team2_player2 }} Won
-            {% else %}
-                {{ game.winner }} Won
-            {% endif %}
+        
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+            <div class="text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-0">
+                {{ game.team1_final_score }} - {{ game.team2_final_score }}
+            </div>
+            <div class="text-sm text-gray-600">
+                {{ game.completed_date | simple_datetime }}
+            </div>
+        </div>
+        
+        <div>
+            <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate block text-center sm:inline-block sm:w-auto">
+                View Game
+            </a>
         </div>
     </div>
-    <div class="flex justify-between items-center mb-4">
-        <div class="text-lg font-bold text-gray-900">
-            {{ game.team1_final_score }} - {{ game.team2_final_score }}
-        </div>
-        <div class="text-sm text-gray-600">
-            {{ game.completed_date | simple_datetime }}
-        </div>
-    </div>
-    <div>
-        <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate">
-            View Game
-        </a>
-    </div>
+    {% endfor %}
 </div>
-{% endfor %}
 {% endif %}
 
 {% if not active_games and not completed_games %}
-<div class="text-center py-12">
-    <div class="text-gray-400 text-6xl mb-4">🎴</div>
-    <h3 class="text-xl font-medium text-gray-600 mb-2">No games yet</h3>
-    <p class="text-gray-500 mb-6">Ready to start your first Spades game?</p>
-    <a href="{{ url_for('new_game') }}" class="bg-spades-success text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors btn-animate">
+<div class="text-center py-12 md:py-16">
+    <div class="text-gray-400 text-6xl md:text-8xl mb-4">🎴</div>
+    <h3 class="text-xl md:text-2xl font-medium text-gray-600 mb-2">No games yet</h3>
+    <p class="text-gray-500 mb-6 md:mb-8">Ready to start your first Spades game?</p>
+    <a href="{{ url_for('new_game') }}" class="bg-spades-success text-white px-6 py-3 md:px-8 md:py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors btn-animate text-lg">
         Start your first game!
     </a>
 </div>
 {% endif %}
+
+<!-- Optional donation section -->
+<div class="text-center mt-12 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+    <div class="max-w-md mx-auto">
+        <p class="text-sm text-gray-600 mb-3">🎯 Enjoying the app? Help keep it running!</p>
+        <div class="flex flex-wrap justify-center gap-2">
+            <a href="#" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors">
+                ☕ $5
+            </a>
+            <a href="#" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors">
+                🍕 $10
+            </a>
+            <a href="#" class="bg-yellow-700 hover:bg-yellow-800 text-white px-3 py-2 rounded text-sm font-medium transition-colors">
+                🎯 $25
+            </a>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Your support helps keep this free for everyone</p>
+    </div>
+</div>
 {% endblock %}

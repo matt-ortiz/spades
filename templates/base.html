@@ -1,19 +1,28 @@
-{# Team Scores Component Macro #}
+{# Team Scores Component Macro - Professional Scoreboard Style #}
 {% macro team_scores(game) %}
 <div class="mb-4">
-    <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-2 text-center border border-blue-200">
-            <div class="text-xs font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
-            <div class="text-lg font-bold text-blue-900">{{ game.team1_final_score }}</div>
-            {% if game.team1_bags > 0 %}
-            <!-- <div class="text-xs text-yellow-600">{{ game.team1_bags }} bags</div>-->
-            {% endif %}
+    <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-4 text-white">
+        <!-- Team names row -->
+        <div class="grid grid-cols-2 gap-4 mb-3">
+            <div class="text-center">
+                <div class="font-medium text-sm md:text-base leading-tight">{{ game.team1_player1 }} & {{ game.team1_player2 }}</div>
+            </div>
+            <div class="text-center">
+                <div class="font-medium text-sm md:text-base leading-tight">{{ game.team2_player1 }} & {{ game.team2_player2 }}</div>
+            </div>
         </div>
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-2 text-center border border-purple-200">
-            <div class="text-xs font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
-            <div class="text-lg font-bold text-purple-900">{{ game.team2_final_score }}</div>
-            {% if game.team2_bags > 0 %}
-            <!-- <div class="text-xs text-yellow-600">{{ game.team2_bags }} bags</div>-->
+        
+        <!-- Score row -->
+        <div class="text-center">
+            <div class="text-2xl md:text-3xl font-bold font-mono tracking-wider">
+                {{ game.team1_final_score }}<span class="text-gray-400 mx-2">-</span>{{ game.team2_final_score }}
+            </div>
+            {% if game.team1_bags > 0 or game.team2_bags > 0 %}
+            <div class="text-xs text-yellow-300 mt-2">
+                {% if game.team1_bags > 0 %}{{ game.team1_bags }} bags{% endif %}
+                {% if game.team1_bags > 0 and game.team2_bags > 0 %} | {% endif %}
+                {% if game.team2_bags > 0 %}{{ game.team2_bags }} bags{% endif %}
+            </div>
             {% endif %}
         </div>
     </div>
@@ -48,15 +57,18 @@
     {% if session.user_id %}
     <nav class="bg-spades-primary shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-12">
+            <div class="flex justify-between items-center h-12 md:h-16">
                 <div class="flex items-center space-x-4">
-                    <a href="{{ url_for('new_game') }}" class="bg-spades-success text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-green-600 transition-colors btn-animate">
+                    <a href="{{ url_for('dashboard') }}" class="text-white hover:text-gray-200 transition-colors">
+                        <span class="text-lg md:text-xl font-bold">🃏 Spades</span>
+                    </a>
+                    <a href="{{ url_for('new_game') }}" class="bg-spades-success text-white px-3 py-1.5 md:px-4 md:py-2 rounded text-sm font-medium hover:bg-green-600 transition-colors btn-animate">
                         🎯 New Game
                     </a>
                 </div>
                 <div class="relative">
                     <button onclick="toggleDropdown()" class="flex items-center text-white hover:text-gray-200 transition-colors">
-                        <span class="text-sm">Menu</span>
+                        <span class="text-sm md:text-base">Menu</span>
                         <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
@@ -71,16 +83,17 @@
     </nav>
     {% endif %}
 
-    <div class="max-w-md mx-auto">
+    <!-- Responsive container that adapts to screen size -->
+    <div class="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto md:px-6">
         {% block header %}
-        <div class="bg-spades-primary text-white text-center py-4">
-            <h1 class="text-lg font-bold">{% block subtitle %}Track your Spades games{% endblock %}</h1>
-            <p class="text-blue-200 mt-1 text-sm">{% block datetime %}{% endblock %}</p>
+        <div class="bg-spades-primary text-white text-center py-4 md:py-6 {% if not session.user_id %}mt-8 rounded-t-lg{% endif %}">
+            <h1 class="text-lg md:text-xl lg:text-2xl font-bold">{% block subtitle %}Track your Spades games{% endblock %}</h1>
+            <p class="text-blue-200 mt-1 text-sm md:text-base">{% block datetime %}{% endblock %}</p>
         </div>
         {% endblock %}
 
-        <div class="bg-white shadow-xl rounded-t-lg {% if not session.user_id %}rounded-lg mt-8{% endif %}">
-            <div class="p-6">
+        <div class="bg-white shadow-xl {% if session.user_id %}rounded-t-lg{% else %}rounded-lg{% endif %}">
+            <div class="p-4 md:p-6 lg:p-8">
                 {% with messages = get_flashed_messages() %}
                     {% if messages %}
                         {% for message in messages %}
