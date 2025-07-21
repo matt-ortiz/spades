@@ -25,10 +25,10 @@
 <!-- Main content with professional container -->
 <div class="max-w-6xl mx-auto px-6 py-12">
 
-    <!-- Core Features Grid - Professional layout -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
+    <!-- Core Features Grid - 2x2 Professional layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-12">
         <div class="feature-card bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="text-3xl mb-4 text-slate-600">📱</div>
+<!--            <div class="text-3xl mb-4 text-slate-600">📱</div>-->
             <h3 class="font-semibold text-slate-800 mb-3 text-lg">Mobile Optimized</h3>
             <ul class="text-sm text-slate-600 space-y-2 text-left">
                 <li>• Large, precise touch controls</li>
@@ -39,7 +39,7 @@
         </div>
 
         <div class="feature-card bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="text-3xl mb-4 text-slate-600">🧮</div>
+<!--            <div class="text-3xl mb-4 text-slate-600">🧮</div>-->
             <h3 class="font-semibold text-slate-800 mb-3 text-lg">Advanced Scoring</h3>
             <ul class="text-sm text-slate-600 space-y-2 text-left">
                 <li>• Automated calculations</li>
@@ -50,7 +50,7 @@
         </div>
 
         <div class="feature-card bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="text-3xl mb-4 text-slate-600">🎯</div>
+<!--            <div class="text-3xl mb-4 text-slate-600">🎯</div>-->
             <h3 class="font-semibold text-slate-800 mb-3 text-lg">Complete Bid System</h3>
             <ul class="text-sm text-slate-600 space-y-2 text-left">
                 <li>• Standard bidding (1-13)</li>
@@ -61,25 +61,56 @@
         </div>
 
         <div class="feature-card bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="text-3xl mb-4 text-slate-600">⚙️</div>
+<!--            <div class="text-3xl mb-4 text-slate-600">⚙️</div>-->
             <h3 class="font-semibold text-slate-800 mb-3 text-lg">Customizable Rules</h3>
             <ul class="text-sm text-slate-600 space-y-2 text-left">
                 <li>• Adjustable winning scores</li>
                 <li>• Custom penalty settings</li>
                 <li>• Flexible bag thresholds</li>
-                <!-- <li>• Tournament-ready options</li> -->
             </ul>
         </div>
+    </div>
 
-        <div class="feature-card bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="text-3xl mb-4 text-blue-600">👀</div>
-            <h3 class="font-semibold text-blue-800 mb-3 text-lg">Spectator View</h3>
-            <ul class="text-sm text-blue-600 space-y-2 text-left">
-                <li>• Share with simple 5-digit codes</li>
-                <li>• Real-time score following</li>
-                <li>• No signup required</li>
-                <li>• Perfect for friends & family</li>
-            </ul>
+    <!-- NEW: Spectator View Feature Banner -->
+    <div class="bg-gradient-to-r from-slate-50 to-blue-50 border border-blue-200 rounded-xl p-8 md:p-10 mb-16 shadow-sm">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div class="text-center md:text-left flex-1">
+                    <div class="inline-flex items-center gap-3 mb-4">
+                        <div class="text-4xl">👀</div>
+                        <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">NEW</span>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-4">Spectator View</h2>
+                    <p class="text-slate-600 mb-6 text-lg">Let friends and family follow your games live with simple 5-digit codes!</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-600">✓</span>
+                            <span class="text-slate-700">Share with code "99165"</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-600">✓</span>
+                            <span class="text-slate-700">Real-time score updates</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-600">✓</span>
+                            <span class="text-slate-700">No signup required</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-600">✓</span>
+                            <span class="text-slate-700">Perfect for tournaments</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white border border-blue-300 rounded-lg p-6 shadow-sm">
+                    <div class="text-center">
+                        <div class="text-xs text-blue-600 font-medium mb-2">Example Game Code</div>
+                        <div class="text-4xl font-bold font-mono tracking-wider text-slate-800 bg-blue-50 border border-blue-200 rounded-lg py-3 px-6 mb-3">99165</div>
+                        <div class="text-xs text-slate-500">{{ request.host_url }}view/99165</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -254,17 +285,12 @@ body.homepage .bg-white.shadow-xl {
 .feature-card:nth-child(2) { animation-delay: 0.2s; }
 .feature-card:nth-child(3) { animation-delay: 0.3s; }
 .feature-card:nth-child(4) { animation-delay: 0.4s; }
-.feature-card:nth-child(5) { animation-delay: 0.5s; }
 
 /* Professional responsive design */
 @media (max-width: 768px) {
     .max-w-6xl {
         padding-left: 1rem;
         padding-right: 1rem;
-    }
-
-    .grid.lg\\:grid-cols-5 {
-        grid-template-columns: 1fr;
     }
 
     .grid.lg\\:grid-cols-2 {
