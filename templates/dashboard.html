@@ -70,35 +70,75 @@
 <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 mt-8 md:mt-12">🏆 Recent Completed Games</h2>
 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
     {% for game in completed_games %}
-    <div class="spades-card rounded-lg p-4 md:p-6 transition-all duration-200 hover:shadow-lg">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
-            <div class="font-semibold text-gray-800 mb-2 sm:mb-0">
-                {{ game.team1_player1 }}/{{ game.team1_player2 }} <br class="sm:hidden">
-                <span class="text-gray-600">vs</span> {{ game.team2_player1 }}/{{ game.team2_player2 }}
+    <div class="bg-white rounded-lg border border-gray-200 hover:border-gray-300 p-4 transition-all duration-200 hover:shadow-sm">
+        <!-- Header with date and status -->
+        <div class="flex justify-between items-start mb-3">
+            <div class="text-xs text-gray-500 uppercase tracking-wide">
+                Completed {{ game.completed_date | simple_datetime }}
             </div>
-            <div class="text-green-600 font-semibold text-sm">
-                {% if game.winner == 'Team 1' %}
-                    {{ game.team1_player1 }}/{{ game.team1_player2 }} Won
-                {% elif game.winner == 'Team 2' %}
-                    {{ game.team2_player1 }}/{{ game.team2_player2 }} Won
-                {% else %}
-                    {{ game.winner }} Won
-                {% endif %}
+            <div class="bg-green-50 text-green-700 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                <span>✓</span>
+                <span>Done</span>
             </div>
         </div>
         
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-            <div class="text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-0">
-                {{ game.team1_final_score }} - {{ game.team2_final_score }}
+        <!-- Match Summary -->
+        <div class="mb-4">
+            <div class="flex items-center justify-between">
+                <!-- Team 1 -->
+                <div class="text-left flex-1">
+                    <div class="text-sm font-medium text-gray-800 mb-1">
+                        {{ game.team1_player1 }}<br>{{ game.team1_player2 }}
+                    </div>
+                    <div class="text-2xl font-bold {% if game.winner == 'Team 1' %}text-green-600{% else %}text-gray-400{% endif %}">
+                        {{ game.team1_final_score }}
+                    </div>
+                </div>
+                
+                <!-- VS and Winner Crown -->
+                <div class="text-center px-4">
+                    <div class="text-gray-400 text-sm font-medium mb-2">VS</div>
+                    {% if game.winner == 'Team 1' %}
+                        <div class="text-yellow-500 text-lg">👑</div>
+                        <div class="text-xs text-green-600 font-medium mt-1">Winner</div>
+                    {% elif game.winner == 'Team 2' %}
+                        <div class="text-yellow-500 text-lg">👑</div>
+                        <div class="text-xs text-green-600 font-medium mt-1">Winner</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Team 2 -->
+                <div class="text-right flex-1">
+                    <div class="text-sm font-medium text-gray-800 mb-1">
+                        {{ game.team2_player1 }}<br>{{ game.team2_player2 }}
+                    </div>
+                    <div class="text-2xl font-bold {% if game.winner == 'Team 2' %}text-green-600{% else %}text-gray-400{% endif %}">
+                        {{ game.team2_final_score }}
+                    </div>
+                </div>
             </div>
+        </div>
+        
+        <!-- Winner Banner -->
+        <div class="bg-gray-50 rounded px-3 py-2 mb-3 text-center">
             <div class="text-sm text-gray-600">
-                {{ game.completed_date | simple_datetime }}
+                <span class="font-medium">
+                    {% if game.winner == 'Team 1' %}
+                        {{ game.team1_player1 }} & {{ game.team1_player2 }}
+                    {% elif game.winner == 'Team 2' %}
+                        {{ game.team2_player1 }} & {{ game.team2_player2 }}
+                    {% else %}
+                        {{ game.winner }}
+                    {% endif %}
+                </span>
+                <span class="text-gray-500">won this game</span>
             </div>
         </div>
         
+        <!-- Action Button -->
         <div>
-            <a href="{{ url_for('game', game_id=game.id) }}" class="bg-spades-secondary text-white px-4 py-2 rounded font-medium hover:bg-blue-600 transition-colors btn-animate block text-center sm:inline-block sm:w-auto">
-                View Game
+            <a href="{{ url_for('game', game_id=game.id) }}" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded font-medium transition-colors btn-animate text-center block">
+                View Game Details
             </a>
         </div>
     </div>
