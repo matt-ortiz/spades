@@ -195,20 +195,17 @@ def new_game():
         blind_nil_penalty = int(request.form.get('blind_nil_penalty', 200))
         bag_penalty_threshold = int(request.form.get('bag_penalty_threshold', 10))
         bag_penalty_points = int(request.form.get('bag_penalty_points', 100))
-        failed_nil_handling = request.form.get('failed_nil_handling', 'takes_bags')
         
         conn = get_db_connection()
         cursor = conn.execute('''
             INSERT INTO games (
                 created_by_user_id, team1_player1, team1_player2, 
                 team2_player1, team2_player2, max_score, nil_penalty, 
-                blind_nil_penalty, bag_penalty_threshold, bag_penalty_points, 
-                failed_nil_handling
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                blind_nil_penalty, bag_penalty_threshold, bag_penalty_points
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (session['user_id'], team1_player1, team1_player2, 
               team2_player1, team2_player2, max_score, nil_penalty, 
-              blind_nil_penalty, bag_penalty_threshold, bag_penalty_points, 
-              failed_nil_handling))
+              blind_nil_penalty, bag_penalty_threshold, bag_penalty_points))
         
         game_id = cursor.lastrowid
         conn.commit()
@@ -520,18 +517,17 @@ def edit_game(game_id):
         blind_nil_penalty = int(request.form.get('blind_nil_penalty', 200))
         bag_penalty_threshold = int(request.form.get('bag_penalty_threshold', 10))
         bag_penalty_points = int(request.form.get('bag_penalty_points', 100))
-        failed_nil_handling = request.form.get('failed_nil_handling', 'takes_bags')
         
         # Update game settings
         conn.execute('''
             UPDATE games SET 
                 team1_player1 = ?, team1_player2 = ?, team2_player1 = ?, team2_player2 = ?,
                 max_score = ?, nil_penalty = ?, blind_nil_penalty = ?, bag_penalty_threshold = ?,
-                bag_penalty_points = ?, failed_nil_handling = ?
+                bag_penalty_points = ?
             WHERE id = ?
         ''', (team1_player1, team1_player2, team2_player1, team2_player2,
               max_score, nil_penalty, blind_nil_penalty, bag_penalty_threshold,
-              bag_penalty_points, failed_nil_handling, game_id))
+              bag_penalty_points, game_id))
         
         conn.commit()
         conn.close()

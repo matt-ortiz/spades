@@ -72,15 +72,6 @@
                 <input type="number" id="bag_penalty_points" name="bag_penalty_points" value="{{ game.bag_penalty_points }}" min="50" max="200" step="25" inputmode="numeric"
                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-spades-secondary focus:border-spades-secondary">
             </div>
-            <div>
-                <label for="failed_nil_handling" class="block text-sm font-medium text-gray-700 mb-2">Failed Nil Handling</label>
-                <select id="failed_nil_handling" name="failed_nil_handling"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-spades-secondary focus:border-spades-secondary">
-                    <option value="takes_bags" {{ 'selected' if game.failed_nil_handling == 'takes_bags' else '' }}>Takes Bags (Default)</option>
-                    <option value="helps_team" {{ 'selected' if game.failed_nil_handling == 'helps_team' else '' }}>Helps Team</option>
-                    <option value="no_effect" {{ 'selected' if game.failed_nil_handling == 'no_effect' else '' }}>No Effect</option>
-                </select>
-            </div>
         </div>
     </div>
 
@@ -89,58 +80,6 @@
     </button>
 </form>
 
-<!-- Failed Nil Handling Explanation -->
-<div class="mt-6 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-    <div class="flex items-start">
-        <div class="flex-shrink-0">
-            <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                <span class="text-yellow-800 text-sm font-bold">?</span>
-            </div>
-        </div>
-        <div class="ml-3">
-            <h3 class="text-sm font-medium text-yellow-800 mb-2">🎯 Failed Nil Handling Explained</h3>
-            <div class="text-sm text-yellow-700 space-y-3">
-                <p class="mb-3">This setting determines what happens to the tricks taken by a player whose nil bid fails:</p>
-                
-                <div class="space-y-3">
-                    <div class="bg-white rounded-lg p-3 border border-yellow-200">
-                        <div class="font-medium text-yellow-800 mb-1">🟡 Takes Bags (Default)</div>
-                        <div class="text-xs text-gray-600 mb-2">Standard Spades rules</div>
-                        <div>When a nil bid fails, those tricks count as <strong>bags</strong> for the team. This can lead to bag penalties when the threshold is reached.</div>
-                        <div class="mt-2 text-xs bg-yellow-100 rounded px-2 py-1">
-                            <strong>Example:</strong> Partner bids 7, nil player takes 3 tricks (nil fails). If team makes exactly 7+3=10 tricks total, they get 70 points (7×10) - 100 nil penalty + 3 bags = -30 points + 3 bags.
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg p-3 border border-yellow-200">
-                        <div class="font-medium text-blue-700 mb-1">🔵 Helps Team</div>
-                        <div class="text-xs text-gray-600 mb-2">Alternative house rule</div>
-                        <div>When a nil bid fails, those tricks <strong>help the partner make their bid</strong>. No bags are earned from failed nil tricks.</div>
-                        <div class="mt-2 text-xs bg-blue-100 rounded px-2 py-1">
-                            <strong>Example:</strong> Partner bids 7, nil player takes 3 tricks (nil fails). If team makes exactly 7+3=10 tricks total, they get 70 points (7×10) - 100 nil penalty + 3 bags = -30 points + 0 bags.
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg p-3 border border-yellow-200">
-                        <div class="font-medium text-gray-700 mb-1">⚪ No Effect</div>
-                        <div class="text-xs text-gray-600 mb-2">Rare house rule</div>
-                        <div>When a nil bid fails, those tricks are <strong>completely ignored</strong>. They don't help the partner's bid or count as bags.</div>
-                        <div class="mt-2 text-xs bg-gray-100 rounded px-2 py-1">
-                            <strong>Example:</strong> Partner bids 7, nil player takes 3 tricks (nil fails). If partner makes exactly 7 tricks (ignoring nil player's 3), they get 70 points - 100 nil penalty = -30 points + 0 bags.
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mt-4 p-3 bg-yellow-100 rounded-lg border border-yellow-300">
-                    <div class="text-xs font-medium text-yellow-800 mb-1">💡 Important Note:</div>
-                    <div class="text-xs text-yellow-700">
-                        These rules only apply to <strong>failed nil bids</strong>. Successful nil bids always give the full bonus (100 or 200 points) regardless of this setting.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="text-center mt-6">
     <a href="{{ url_for('game', game_id=game.id) }}" class="text-spades-secondary hover:text-blue-600 font-medium">← Back to Game</a>

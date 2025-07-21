@@ -76,3 +76,16 @@
         box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
     }
 }
+
+.pulse-orange {
+    animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-orange {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(249, 115, 22, 0);
+    }
+}

@@ -159,15 +159,32 @@
         {% set pending_round = rounds | selectattr('team1_actual', 'equalto', none) | first %}
         
         {% if pending_round %}
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h4 class="font-semibold text-yellow-800">Round {{ pending_round.round_number }} - Bids Entered</h4>
-                    <p class="text-yellow-700 text-sm">{{ game.team1_player1 }}/{{ game.team1_player2 }}: {{ pending_round.team1_bid }} | {{ game.team2_player1 }}/{{ game.team2_player2 }}: {{ pending_round.team2_bid }}</p>
+        <div class="spades-card rounded-xl p-6 mb-6 bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center justify-center gap-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-lg font-bold text-orange-800 mb-1">Round {{ pending_round.round_number }}</h4>
+                            <p class="text-orange-600 text-sm font-medium">Bids are in! Ready to score</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-2 gap-3">
+                        <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-orange-200">
+                            <div class="text-xs font-medium text-blue-600 mb-1">{{ game.team1_player1 }} / {{ game.team1_player2 }}</div>
+                            <div class="text-lg font-bold text-blue-800">{{ pending_round.team1_bid | format_bid_display }}</div>
+                        </div>
+                        <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-orange-200">
+                            <div class="text-xs font-medium text-purple-600 mb-1">{{ game.team2_player1 }} / {{ game.team2_player2 }}</div>
+                            <div class="text-lg font-bold text-purple-800">{{ pending_round.team2_bid | format_bid_display }}</div>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ url_for('enter_scores', game_id=game.id) }}" class="bg-spades-warning text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600 transition-colors btn-animate">
-                    📊 Enter Scores
-                </a>
+                <div class="flex justify-center md:justify-end">
+                    <a href="{{ url_for('enter_scores', game_id=game.id) }}" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:from-orange-600 hover:to-amber-600 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 btn-animate pulse-orange flex items-center gap-2">
+                        <span class="text-xl">📊</span>
+                        <span>Enter Scores</span>
+                    </a>
+                </div>
             </div>
         </div>
         {% else %}
@@ -312,31 +329,6 @@
                 </div>
             </div>
             
-            <!-- Failed Nil Handling -->
-            <div class="bg-white rounded-lg p-3 border border-gray-200">
-                <div class="font-medium text-gray-700 mb-2">🎯 Failed Nil</div>
-                <div class="space-y-1">
-                    <div class="text-gray-600">Handling:</div>
-                    <div class="font-medium text-sm">
-                        {% if game.failed_nil_handling == 'takes_bags' %}
-                            <span class="text-yellow-600">Takes Bags</span>
-                        {% elif game.failed_nil_handling == 'helps_team' %}
-                            <span class="text-blue-600">Helps Team</span>
-                        {% else %}
-                            <span class="text-gray-600">No Effect</span>
-                        {% endif %}
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">
-                        {% if game.failed_nil_handling == 'takes_bags' %}
-                            Failed nil tricks count as bags
-                        {% elif game.failed_nil_handling == 'helps_team' %}
-                            Failed nil tricks help partner's bid
-                        {% else %}
-                            Failed nil tricks are ignored
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
