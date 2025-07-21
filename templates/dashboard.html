@@ -118,21 +118,32 @@
 {% endif %}
 
 <!-- Optional donation section -->
-<div class="text-center mt-12 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-    <div class="max-w-md mx-auto">
-        <p class="text-sm text-gray-600 mb-3">🎯 Enjoying the app? Help keep it running!</p>
-        <div class="flex flex-wrap justify-center gap-2">
-            <a href="#" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors">
-                ☕ $5
-            </a>
-            <a href="#" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors">
-                🍕 $10
-            </a>
-            <a href="#" class="bg-yellow-700 hover:bg-yellow-800 text-white px-3 py-2 rounded text-sm font-medium transition-colors">
-                🎯 $25
-            </a>
-        </div>
-        <p class="text-xs text-gray-500 mt-2">Your support helps keep this free for everyone</p>
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-8 p-4 bg-spades-primary rounded-lg">
+  <div class="text-white mb-3 sm:mb-0">
+    <div class="font-medium flex items-center gap-2">
+      <i class="fa-solid fa-heart text-red-300 fa-pulse"></i>
+      <span>Love playing Spades?</span>
     </div>
+    <div class="text-sm text-blue-200 flex items-center gap-2 mt-1">
+      <i class="fa-solid fa-server text-blue-300"></i>
+      <span>Help us keep the servers running</span>
+    </div>
+  </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <div class="flex gap-2">
+    <a href="https://www.paypal.com/paypalme/moteez1" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded font-medium transition-all btn-animate text-sm flex items-center gap-2">
+      <i class="fa-brands fa-paypal text-blue-300"></i>
+      <span>PayPal</span>
+    </a>
+      <a href="https://www.venmo.com/u/matt_ortiz" class="payment-btn bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded font-medium transition-all btn-animate text-sm flex items-center gap-2 glow-on-hover">
+            <i class="fa-solid fa-mobile-screen-button text-green-300"></i>
+            <span>Venmo</span>
+        </a>
+      <a href="https://cash.app/$mattweb5" class="payment-btn bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded font-medium transition-all btn-animate text-sm flex items-center gap-2 glow-on-hover">
+            <i class="fa-solid fa-dollar-sign text-green-300"></i>
+            <span>Cash App</span>
+        </a>
+
+  </div>
 </div>
 {% endblock %}
