@@ -3,6 +3,7 @@ import sqlite3
 import os
 from datetime import datetime, timedelta
 import secrets
+import uuid
 from models import init_db, get_db_connection
 from auth import send_security_code, verify_security_code, require_login, cleanup_expired_codes
 from scoring import calculate_round_points, calculate_round_points_with_flags, parse_bid, format_bid_display, format_made_display, get_score_breakdown_detailed, calculate_detailed_round_scoring
@@ -127,7 +128,7 @@ def login():
             # Send email (for now, just flash the code for development)
             if send_security_code(email, code):
                 session['pending_user_id'] = user['id']
-                flash(f'Security code sent to {email}')
+                flash('Security code sent to {}'.format(email))
                 return redirect(url_for('verify'))
             else:
                 flash('Failed to send security code. Please try again.')
@@ -137,10 +138,10 @@ def login():
                 flash('Database is temporarily busy. Please try again in a moment.')
             else:
                 flash('Database error occurred. Please try again.')
-            print(f"Database error in login: {e}")
+            print("Database error in login: {}".format(e))
         except Exception as e:
             flash('An error occurred. Please try again.')
-            print(f"Unexpected error in login: {e}")
+            print("Unexpected error in login: {}".format(e))
         finally:
             try:
                 conn.close()
@@ -196,16 +197,19 @@ def new_game():
         bag_penalty_threshold = int(request.form.get('bag_penalty_threshold', 10))
         bag_penalty_points = int(request.form.get('bag_penalty_points', 100))
         
+        # Generate 5-digit share code
+        share_code = str(secrets.randbelow(90000) + 10000)  # 10000-99999
+        
         conn = get_db_connection()
         cursor = conn.execute('''
             INSERT INTO games (
                 created_by_user_id, team1_player1, team1_player2, 
                 team2_player1, team2_player2, max_score, nil_penalty, 
-                blind_nil_penalty, bag_penalty_threshold, bag_penalty_points
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                blind_nil_penalty, bag_penalty_threshold, bag_penalty_points, share_code
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (session['user_id'], team1_player1, team1_player2, 
               team2_player1, team2_player2, max_score, nil_penalty, 
-              blind_nil_penalty, bag_penalty_threshold, bag_penalty_points))
+              blind_nil_penalty, bag_penalty_threshold, bag_penalty_points, share_code))
         
         game_id = cursor.lastrowid
         conn.commit()
@@ -215,6 +219,29 @@ def new_game():
         return redirect(url_for('game', game_id=game_id))
     
     return render_template('new_game.html')
+
+@app.route('/view/<share_code>')
+def view_game(share_code):
+    """Public spectator view - no authentication required"""
+    conn = get_db_connection()
+    
+    # Get game by share code
+    game = conn.execute('SELECT * FROM games WHERE share_code = ?', (share_code,)).fetchone()
+    
+    if not game:
+        flash('Game not found or invalid share code')
+        conn.close()
+        return render_template('homepage.html')
+    
+    # Get rounds
+    rounds = conn.execute('''
+        SELECT * FROM rounds WHERE game_id = ? ORDER BY round_number
+    ''', (game['id'],)).fetchall()
+    
+    conn.close()
+    
+    # Render spectator template (read-only version of game.html)
+    return render_template('spectator.html', game=game, rounds=rounds)
 
 @app.route('/game/<int:game_id>')
 @require_login
@@ -429,9 +456,9 @@ def enter_scores(game_id):
         # Check for game completion
         if team1_total >= game['max_score'] or team2_total >= game['max_score']:
             if team1_total >= game['max_score']:
-                winner = f"{game['team1_player1']} & {game['team1_player2']}"
+                winner = "{} & {}".format(game['team1_player1'], game['team1_player2'])
             else:
-                winner = f"{game['team2_player1']} & {game['team2_player2']}"
+                winner = "{} & {}".format(game['team2_player1'], game['team2_player2'])
             conn.execute('''
                 UPDATE games SET status = 'completed', winner = ?, completed_date = ?
                 WHERE id = ?

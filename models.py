@@ -77,6 +77,7 @@ def init_db():
             team1_bags INTEGER DEFAULT 0,
             team2_bags INTEGER DEFAULT 0,
             winner TEXT,
+            share_code TEXT,
             created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             completed_date TIMESTAMP,
             FOREIGN KEY (created_by_user_id) REFERENCES users (id)

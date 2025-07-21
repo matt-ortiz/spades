@@ -26,7 +26,7 @@
 <div class="max-w-6xl mx-auto px-6 py-12">
 
     <!-- Core Features Grid - Professional layout -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
         <div class="feature-card bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
             <div class="text-3xl mb-4 text-slate-600">📱</div>
             <h3 class="font-semibold text-slate-800 mb-3 text-lg">Mobile Optimized</h3>
@@ -67,7 +67,18 @@
                 <li>• Adjustable winning scores</li>
                 <li>• Custom penalty settings</li>
                 <li>• Flexible bag thresholds</li>
-                <li>• Tournament-ready options</li>
+                <!-- <li>• Tournament-ready options</li> -->
+            </ul>
+        </div>
+
+        <div class="feature-card bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
+            <div class="text-3xl mb-4 text-blue-600">👀</div>
+            <h3 class="font-semibold text-blue-800 mb-3 text-lg">Spectator View</h3>
+            <ul class="text-sm text-blue-600 space-y-2 text-left">
+                <li>• Share with simple 5-digit codes</li>
+                <li>• Real-time score following</li>
+                <li>• No signup required</li>
+                <li>• Perfect for friends & family</li>
             </ul>
         </div>
     </div>
@@ -243,6 +254,7 @@ body.homepage .bg-white.shadow-xl {
 .feature-card:nth-child(2) { animation-delay: 0.2s; }
 .feature-card:nth-child(3) { animation-delay: 0.3s; }
 .feature-card:nth-child(4) { animation-delay: 0.4s; }
+.feature-card:nth-child(5) { animation-delay: 0.5s; }
 
 /* Professional responsive design */
 @media (max-width: 768px) {
@@ -251,7 +263,7 @@ body.homepage .bg-white.shadow-xl {
         padding-right: 1rem;
     }
 
-    .grid.lg\\:grid-cols-4 {
+    .grid.lg\\:grid-cols-5 {
         grid-template-columns: 1fr;
     }
 
