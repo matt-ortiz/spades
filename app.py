@@ -539,4 +539,5 @@ def edit_game(game_id):
     return render_template('edit_game.html', game=game)
 
 if __name__ == '__main__':
+    # For local development only
     app.run(host='0.0.0.0', port=5000, debug=True)
