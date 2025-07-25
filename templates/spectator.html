@@ -2,23 +2,22 @@
 
 {% block title %}Spectating Game - Spades Score Keeper{% endblock %}
 
-{% block subtitle %}{{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }} (Spectator View){% endblock %}
+{% block subtitle %}{{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}{% endblock %}
 
 {% block datetime %}{{ game.created_date | datetime }}{% endblock %}
 
 {% block content %}
-{{ team_scores(game) }}
-
-    <!-- Spectator Notice -->
+<!-- Spectator Notice -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
         <div class="flex items-center gap-2">
-            <span class="text-yellow-600 text-lg">👀</span>
             <div>
-                <h4 class="font-semibold text-yellow-800">Spectator View</h4>
-                <p class="text-sm text-yellow-700">You're viewing this game as a spectator. Scores update automatically.</p>
+                <h4 class="font-semibold text-yellow-800"><span class="text-yellow-600 text-lg">👀</span> Spectator View: <span class="text-sm text-yellow-700">Scores update automatically.</span></h4>
+
             </div>
         </div>
     </div>
+
+{{ team_scores(game) }}
 
     <!-- Total Differential Display -->
     {% if game.team1_final_score != game.team2_final_score %}
