@@ -156,11 +156,16 @@
             </div>
         </div>
         
-        <!-- Action Button -->
-        <div>
-            <a href="{{ url_for('game', game_id=game.id) }}" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded font-medium transition-colors btn-animate text-center block">
-                View Game Details
+        <!-- Action Buttons -->
+        <div class="flex gap-2">
+            <a href="{{ url_for('game', game_id=game.id) }}" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded font-medium transition-colors btn-animate text-center text-sm">
+                View Details
             </a>
+            <form method="POST" action="{{ url_for('rematch', game_id=game.id) }}" class="flex-1">
+                <button type="submit" class="w-full bg-spades-secondary hover:bg-blue-600 text-white px-4 py-2 rounded font-medium transition-colors btn-animate text-sm">
+                    🔁 Rematch
+                </button>
+            </form>
         </div>
     </div>
     {% endfor %}

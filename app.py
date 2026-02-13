@@ -859,6 +859,47 @@ def bulk_abandon_old_games():
     return redirect(url_for('dashboard'))
 
 
+@app.route('/game/<int:game_id>/rematch', methods=['POST'])
+@require_login
+def rematch(game_id):
+    conn = get_db_connection()
+    original = conn.execute(
+        'SELECT * FROM games WHERE id = ? AND created_by_user_id = ?',
+        (game_id, session['user_id'])
+    ).fetchone()
+
+    if not original:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    share_code = str(secrets.randbelow(90000) + 10000)
+
+    cursor = conn.execute('''
+        INSERT INTO games (
+            created_by_user_id,
+            team1_player1, team1_player2, team2_player1, team2_player2,
+            max_score, nil_penalty, blind_nil_penalty,
+            bag_penalty_threshold, bag_penalty_points, failed_nil_handling,
+            share_code
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        session['user_id'],
+        original['team1_player1'], original['team1_player2'],
+        original['team2_player1'], original['team2_player2'],
+        original['max_score'], original['nil_penalty'], original['blind_nil_penalty'],
+        original['bag_penalty_threshold'], original['bag_penalty_points'],
+        original['failed_nil_handling'], share_code
+    ))
+
+    new_game_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    flash('Rematch started — same players, same rules, fresh scores!')
+    return redirect(url_for('game', game_id=new_game_id))
+
+
 @app.route('/game/<int:game_id>/edit', methods=['GET', 'POST'])
 @require_login
 def edit_game(game_id):

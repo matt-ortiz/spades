@@ -49,6 +49,15 @@
             </h2>
             <p class="text-green-600">Game completed on {{ game.completed_date | simple_datetime }}</p>
         </div>
+
+        <div class="text-center mb-4">
+            <form method="POST" action="{{ url_for('rematch', game_id=game.id) }}">
+                <button type="submit"
+                        class="bg-spades-secondary text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg">
+                    🔁 Rematch
+                </button>
+            </form>
+        </div>
         
         {% set total_rounds = completed_rounds | length %}
         {% set team1_wins = [] %}
