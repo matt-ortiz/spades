@@ -549,6 +549,229 @@ def edit_bids(game_id, round_id):
     conn.close()
     return render_template('edit_bids.html', game=game, round=round_data)
 
+def recalculate_from_round(conn, game_id, start_round_number):
+    """Recalculate all round totals from a given round number onwards.
+    Call this after editing or deleting a round."""
+    game = conn.execute('SELECT * FROM games WHERE id = ?', (game_id,)).fetchone()
+    all_rounds = conn.execute(
+        'SELECT * FROM rounds WHERE game_id = ? AND team1_actual IS NOT NULL ORDER BY round_number',
+        (game_id,)
+    ).fetchall()
+
+    # Seed cumulative state from the round just before start_round_number
+    team1_running_total = 0
+    team2_running_total = 0
+    team1_bags_total = 0
+    team2_bags_total = 0
+
+    for r in all_rounds:
+        if r['round_number'] < start_round_number:
+            team1_running_total = r['team1_total']
+            team2_running_total = r['team2_total']
+            team1_bags_total = r['team1_bags_total']
+            team2_bags_total = r['team2_bags_total']
+
+    # Now recalculate every round from start_round_number onwards
+    for r in all_rounds:
+        if r['round_number'] < start_round_number:
+            continue
+
+        t1_scoring = calculate_detailed_round_scoring(
+            r['team1_bid'], r['team1_actual'], game,
+            bool(r['team1_nil_success']), bool(r['team1_blind_nil_success']), bool(r['team1_blind_success'])
+        )
+        t2_scoring = calculate_detailed_round_scoring(
+            r['team2_bid'], r['team2_actual'], game,
+            bool(r['team2_nil_success']), bool(r['team2_blind_nil_success']), bool(r['team2_blind_success'])
+        )
+
+        t1_bags_earned = max(0, r['team1_actual'] - int(parse_bid(r['team1_bid'])[0]))
+        t2_bags_earned = max(0, r['team2_actual'] - int(parse_bid(r['team2_bid'])[0]))
+
+        t1_bags_before = team1_bags_total + t1_bags_earned
+        t2_bags_before = team2_bags_total + t2_bags_earned
+
+        team1_bags_total += t1_bags_earned
+        team2_bags_total += t2_bags_earned
+
+        t1_bag_penalty = 0
+        t2_bag_penalty = 0
+        while team1_bags_total >= game['bag_penalty_threshold']:
+            t1_bag_penalty += game['bag_penalty_points']
+            team1_bags_total -= game['bag_penalty_threshold']
+        while team2_bags_total >= game['bag_penalty_threshold']:
+            t2_bag_penalty += game['bag_penalty_points']
+            team2_bags_total -= game['bag_penalty_threshold']
+
+        t1_points = t1_scoring['total_points'] - t1_bag_penalty
+        t2_points = t2_scoring['total_points'] - t2_bag_penalty
+
+        team1_running_total += t1_points
+        team2_running_total += t2_points
+
+        conn.execute('''
+            UPDATE rounds SET
+                team1_points = ?, team2_points = ?,
+                team1_total = ?, team2_total = ?,
+                team1_bags_earned = ?, team2_bags_earned = ?,
+                team1_bags_total = ?, team2_bags_total = ?,
+                team1_bag_penalty = ?, team2_bag_penalty = ?,
+                team1_bags_before_penalty = ?, team2_bags_before_penalty = ?,
+                team1_bid_points = ?, team1_nil_bonus = ?, team1_blind_nil_bonus = ?,
+                team1_blind_bonus = ?, team1_bag_points = ?,
+                team2_bid_points = ?, team2_nil_bonus = ?, team2_blind_nil_bonus = ?,
+                team2_blind_bonus = ?, team2_bag_points = ?
+            WHERE id = ?
+        ''', (
+            t1_points, t2_points,
+            team1_running_total, team2_running_total,
+            t1_bags_earned, t2_bags_earned,
+            team1_bags_total, team2_bags_total,
+            t1_bag_penalty, t2_bag_penalty,
+            t1_bags_before, t2_bags_before,
+            t1_scoring['bid_points'], t1_scoring['nil_bonus'], t1_scoring['blind_nil_bonus'],
+            t1_scoring['blind_bonus'], t1_scoring['bag_points'],
+            t2_scoring['bid_points'], t2_scoring['nil_bonus'], t2_scoring['blind_nil_bonus'],
+            t2_scoring['blind_bonus'], t2_scoring['bag_points'],
+            r['id']
+        ))
+
+    # Update game-level totals and completion status
+    last = conn.execute(
+        'SELECT * FROM rounds WHERE game_id = ? AND team1_actual IS NOT NULL ORDER BY round_number DESC LIMIT 1',
+        (game_id,)
+    ).fetchone()
+
+    if last:
+        conn.execute('''
+            UPDATE games SET team1_final_score = ?, team2_final_score = ?,
+                             team1_bags = ?, team2_bags = ?
+            WHERE id = ?
+        ''', (last['team1_total'], last['team2_total'],
+              last['team1_bags_total'], last['team2_bags_total'], game_id))
+
+        # Re-evaluate completion
+        if last['team1_total'] >= game['max_score'] or last['team2_total'] >= game['max_score']:
+            if last['team1_total'] >= game['max_score']:
+                winner = '{} & {}'.format(game['team1_player1'], game['team1_player2'])
+            else:
+                winner = '{} & {}'.format(game['team2_player1'], game['team2_player2'])
+            conn.execute(
+                "UPDATE games SET status = 'completed', winner = ?, completed_date = ? WHERE id = ?",
+                (winner, datetime.now(), game_id)
+            )
+        else:
+            # Game may have been completed before the edit — reopen it
+            conn.execute(
+                "UPDATE games SET status = 'active', winner = NULL, completed_date = NULL WHERE id = ? AND status = 'completed'",
+                (game_id,)
+            )
+    else:
+        # All rounds deleted — reset game totals
+        conn.execute(
+            'UPDATE games SET team1_final_score = 0, team2_final_score = 0, team1_bags = 0, team2_bags = 0, status = \'active\', winner = NULL, completed_date = NULL WHERE id = ?',
+            (game_id,)
+        )
+
+
+@app.route('/game/<int:game_id>/round/<int:round_id>/edit', methods=['GET', 'POST'])
+@require_login
+def edit_round(game_id, round_id):
+    conn = get_db_connection()
+    game = conn.execute('SELECT * FROM games WHERE id = ? AND created_by_user_id = ?',
+                        (game_id, session['user_id'])).fetchone()
+    if not game:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    round_data = conn.execute(
+        'SELECT * FROM rounds WHERE id = ? AND game_id = ? AND team1_actual IS NOT NULL',
+        (round_id, game_id)
+    ).fetchone()
+    if not round_data:
+        flash('Round not found')
+        conn.close()
+        return redirect(url_for('game', game_id=game_id))
+
+    if request.method == 'POST':
+        team1_actual = int(request.form['team1_actual'])
+        team2_actual = int(request.form['team2_actual'])
+
+        if team1_actual + team2_actual != 13:
+            flash('Team totals must equal 13')
+            conn.close()
+            return render_template('edit_round.html', game=game, round=round_data)
+
+        team1_bid = request.form.get('team1_bid', round_data['team1_bid'])
+        team2_bid = request.form.get('team2_bid', round_data['team2_bid'])
+
+        team1_nil_success = request.form.get('team1_nil_success') == 'on'
+        team1_blind_nil_success = request.form.get('team1_blind_nil_success') == 'on'
+        team1_blind_success = request.form.get('team1_blind_success') == 'on'
+        team2_nil_success = request.form.get('team2_nil_success') == 'on'
+        team2_blind_nil_success = request.form.get('team2_blind_nil_success') == 'on'
+        team2_blind_success = request.form.get('team2_blind_success') == 'on'
+
+        # Update the raw data for this round; recalculate will handle derived fields
+        conn.execute('''
+            UPDATE rounds SET
+                team1_bid = ?, team2_bid = ?,
+                team1_actual = ?, team2_actual = ?,
+                team1_nil_success = ?, team1_blind_nil_success = ?, team1_blind_success = ?,
+                team2_nil_success = ?, team2_blind_nil_success = ?, team2_blind_success = ?
+            WHERE id = ?
+        ''', (team1_bid, team2_bid, team1_actual, team2_actual,
+              team1_nil_success, team1_blind_nil_success, team1_blind_success,
+              team2_nil_success, team2_blind_nil_success, team2_blind_success,
+              round_id))
+
+        recalculate_from_round(conn, game_id, round_data['round_number'])
+        conn.commit()
+        conn.close()
+        flash('Round {} updated and scores recalculated.'.format(round_data['round_number']))
+        return redirect(url_for('game', game_id=game_id))
+
+    conn.close()
+    return render_template('edit_round.html', game=game, round=round_data)
+
+
+@app.route('/game/<int:game_id>/round/<int:round_id>/delete', methods=['POST'])
+@require_login
+def delete_round(game_id, round_id):
+    conn = get_db_connection()
+    game = conn.execute('SELECT * FROM games WHERE id = ? AND created_by_user_id = ?',
+                        (game_id, session['user_id'])).fetchone()
+    if not game:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    round_data = conn.execute(
+        'SELECT * FROM rounds WHERE id = ? AND game_id = ? AND team1_actual IS NOT NULL',
+        (round_id, game_id)
+    ).fetchone()
+    if not round_data:
+        flash('Round not found')
+        conn.close()
+        return redirect(url_for('game', game_id=game_id))
+
+    deleted_round_number = round_data['round_number']
+    conn.execute('DELETE FROM rounds WHERE id = ?', (round_id,))
+
+    # Re-number all subsequent rounds to close the gap
+    conn.execute('''
+        UPDATE rounds SET round_number = round_number - 1
+        WHERE game_id = ? AND round_number > ?
+    ''', (game_id, deleted_round_number))
+
+    recalculate_from_round(conn, game_id, deleted_round_number)
+    conn.commit()
+    conn.close()
+    flash('Round {} deleted and scores recalculated.'.format(deleted_round_number))
+    return redirect(url_for('game', game_id=game_id))
+
+
 @app.route('/game/<int:game_id>/abandon', methods=['POST'])
 @require_login
 def abandon_game(game_id):

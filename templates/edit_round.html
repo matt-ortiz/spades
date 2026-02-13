@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Round {{ round.round_number }} - Spades Score Keeper{% endblock %}
+
+{% block subtitle %}{{ game.team1_player1 }}/{{ game.team1_player2 }} vs {{ game.team2_player1 }}/{{ game.team2_player2 }}{% endblock %}
+
+{% block datetime %}{{ game.created_date | datetime }}{% endblock %}
+
+{% block content %}
+{{ team_scores(game) }}
+
+<div class="mb-4 flex items-center justify-between">
+    <h3 class="text-lg font-semibold text-gray-800">✏️ Edit Round {{ round.round_number }}</h3>
+    <span class="text-sm text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+        ⚠️ All later rounds will be recalculated
+    </span>
+</div>
+
+<form method="POST" id="editRoundForm" class="space-y-6">
+
+    <!-- Bids section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Team 1 Bid -->
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <h4 class="text-sm font-semibold text-blue-800 mb-3">{{ game.team1_player1 }}/{{ game.team1_player2 }} — Bid</h4>
+            <div class="grid grid-cols-7 gap-1 mb-3">
+                {% for i in range(14) %}
+                <button type="button"
+                        class="bid-btn-team1 bg-white border border-gray-300 rounded py-2 px-1 text-sm font-semibold hover:bg-blue-100 hover:border-blue-500 transition-colors"
+                        onclick="selectBid('team1', {{ i }}, event)">{{ i }}</button>
+                {% endfor %}
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <label class="bid-type-label-team1 flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-2 hover:border-blue-400 transition-colors text-sm font-medium text-gray-700"
+                       onclick="toggleBidType('team1', 'nil', event)">
+                    <input type="radio" name="team1_bid_type" value="nil" class="sr-only"> Nil
+                </label>
+                <label class="bid-type-label-team1 flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-2 hover:border-blue-400 transition-colors text-sm font-medium text-gray-700"
+                       onclick="toggleBidType('team1', 'blind_nil', event)">
+                    <input type="radio" name="team1_bid_type" value="blind_nil" class="sr-only"> Blind Nil
+                </label>
+                <label class="bid-type-label-team1 flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-2 hover:border-blue-400 transition-colors text-sm font-medium text-gray-700"
+                       onclick="toggleBidType('team1', 'blind', event)">
+                    <input type="radio" name="team1_bid_type" value="blind" class="sr-only"> Blind
+                </label>
+            </div>
+            <input type="hidden" id="team1_bid" name="team1_bid" value="{{ round.team1_bid }}">
+            <div class="mt-2 text-center text-sm font-medium text-blue-700">
+                Current: <span id="team1_bid_display">{{ round.team1_bid | format_bid_display }}</span>
+            </div>
+        </div>
+
+        <!-- Team 2 Bid -->
+        <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+            <h4 class="text-sm font-semibold text-purple-800 mb-3">{{ game.team2_player1 }}/{{ game.team2_player2 }} — Bid</h4>
+            <div class="grid grid-cols-7 gap-1 mb-3">
+                {% for i in range(14) %}
+                <button type="button"
+                        class="bid-btn-team2 bg-white border border-gray-300 rounded py-2 px-1 text-sm font-semibold hover:bg-purple-100 hover:border-purple-500 transition-colors"
+                        onclick="selectBid('team2', {{ i }}, event)">{{ i }}</button>
+                {% endfor %}
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <label class="bid-type-label-team2 flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-2 hover:border-purple-400 transition-colors text-sm font-medium text-gray-700"
+                       onclick="toggleBidType('team2', 'nil', event)">
+                    <input type="radio" name="team2_bid_type" value="nil" class="sr-only"> Nil
+                </label>
+                <label class="bid-type-label-team2 flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-2 hover:border-purple-400 transition-colors text-sm font-medium text-gray-700"
+                       onclick="toggleBidType('team2', 'blind_nil', event)">
+                    <input type="radio" name="team2_bid_type" value="blind_nil" class="sr-only"> Blind Nil
+                </label>
+                <label class="bid-type-label-team2 flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-2 hover:border-purple-400 transition-colors text-sm font-medium text-gray-700"
+                       onclick="toggleBidType('team2', 'blind', event)">
+                    <input type="radio" name="team2_bid_type" value="blind" class="sr-only"> Blind
+                </label>
+            </div>
+            <input type="hidden" id="team2_bid" name="team2_bid" value="{{ round.team2_bid }}">
+            <div class="mt-2 text-center text-sm font-medium text-purple-700">
+                Current: <span id="team2_bid_display">{{ round.team2_bid | format_bid_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tricks taken section -->
+    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <h4 class="text-sm font-semibold text-gray-700 mb-4">Tricks Taken</h4>
+        <div class="space-y-4">
+            <!-- Team 1 tricks -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-blue-800">{{ game.team1_player1 }}/{{ game.team1_player2 }}</span>
+                    <span class="text-xs text-gray-500">Currently: {{ round.team1_actual }}</span>
+                </div>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for i in range(14) %}
+                    <button type="button"
+                            class="tricks-btn-team1 bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                            onclick="setActual('team1', {{ i }})">{{ i }}</button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="team1_actual" name="team1_actual" value="{{ round.team1_actual }}">
+                <!-- Special bid toggles -->
+                <div id="team1_special_bids" class="mt-3 space-y-2" style="display:none;">
+                    <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-4 hover:border-blue-400 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50" id="team1_nil_toggle" style="display:none;">
+                        <input type="checkbox" id="team1_nil_success" name="team1_nil_success" class="sr-only" {% if round.team1_nil_success %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">
+                            <span class="checkbox-text-unchecked {% if round.team1_nil_success %}hidden{% endif %}">❌ Nil unsuccessful</span>
+                            <span class="checkbox-text-checked {% if not round.team1_nil_success %}hidden{% endif %}">✅ Nil successful</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-4 hover:border-blue-400 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50" id="team1_blind_nil_toggle" style="display:none;">
+                        <input type="checkbox" id="team1_blind_nil_success" name="team1_blind_nil_success" class="sr-only" {% if round.team1_blind_nil_success %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">
+                            <span class="checkbox-text-unchecked {% if round.team1_blind_nil_success %}hidden{% endif %}">❌ Blind Nil unsuccessful</span>
+                            <span class="checkbox-text-checked {% if not round.team1_blind_nil_success %}hidden{% endif %}">✅ Blind Nil successful</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-4 hover:border-blue-400 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50" id="team1_blind_toggle" style="display:none;">
+                        <input type="checkbox" id="team1_blind_success" name="team1_blind_success" class="sr-only" {% if round.team1_blind_success %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">
+                            <span class="checkbox-text-unchecked {% if round.team1_blind_success %}hidden{% endif %}">❌ Blind bid unsuccessful</span>
+                            <span class="checkbox-text-checked {% if not round.team1_blind_success %}hidden{% endif %}">✅ Blind bid successful</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Team 2 tricks -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-purple-800">{{ game.team2_player1 }}/{{ game.team2_player2 }}</span>
+                    <span class="text-xs text-gray-500">Currently: {{ round.team2_actual }}</span>
+                </div>
+                <div class="grid grid-cols-7 gap-2">
+                    {% for i in range(14) %}
+                    <button type="button"
+                            class="tricks-btn-team2 bg-white border-2 border-gray-300 rounded-lg py-3 px-2 text-center font-semibold hover:border-purple-500 hover:bg-purple-50 transition-colors"
+                            onclick="setActual('team2', {{ i }})">{{ i }}</button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="team2_actual" name="team2_actual" value="{{ round.team2_actual }}">
+                <!-- Special bid toggles -->
+                <div id="team2_special_bids" class="mt-3 space-y-2" style="display:none;">
+                    <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-4 hover:border-purple-400 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50" id="team2_nil_toggle" style="display:none;">
+                        <input type="checkbox" id="team2_nil_success" name="team2_nil_success" class="sr-only" {% if round.team2_nil_success %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">
+                            <span class="checkbox-text-unchecked {% if round.team2_nil_success %}hidden{% endif %}">❌ Nil unsuccessful</span>
+                            <span class="checkbox-text-checked {% if not round.team2_nil_success %}hidden{% endif %}">✅ Nil successful</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-4 hover:border-purple-400 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50" id="team2_blind_nil_toggle" style="display:none;">
+                        <input type="checkbox" id="team2_blind_nil_success" name="team2_blind_nil_success" class="sr-only" {% if round.team2_blind_nil_success %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">
+                            <span class="checkbox-text-unchecked {% if round.team2_blind_nil_success %}hidden{% endif %}">❌ Blind Nil unsuccessful</span>
+                            <span class="checkbox-text-checked {% if not round.team2_blind_nil_success %}hidden{% endif %}">✅ Blind Nil successful</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center justify-center cursor-pointer bg-white border-2 border-gray-300 rounded-lg py-2 px-4 hover:border-purple-400 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50" id="team2_blind_toggle" style="display:none;">
+                        <input type="checkbox" id="team2_blind_success" name="team2_blind_success" class="sr-only" {% if round.team2_blind_success %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">
+                            <span class="checkbox-text-unchecked {% if round.team2_blind_success %}hidden{% endif %}">❌ Blind bid unsuccessful</span>
+                            <span class="checkbox-text-checked {% if not round.team2_blind_success %}hidden{% endif %}">✅ Blind bid successful</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="validation_error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center gap-2">
+            <span class="text-red-600">⚠️</span>
+            <span class="text-red-800 font-medium">Team totals must equal 13!</span>
+        </div>
+    </div>
+
+    <button type="submit" id="submitBtn"
+            class="w-full bg-spades-success text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        ✅ Save Changes
+    </button>
+</form>
+
+<div class="text-center mt-6">
+    <a href="{{ url_for('game', game_id=game.id) }}" class="text-spades-secondary hover:text-blue-600 font-medium">← Cancel</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Pre-load existing values from the round
+const existingTeam1Bid = '{{ round.team1_bid }}';
+const existingTeam2Bid = '{{ round.team2_bid }}';
+const existingTeam1Actual = {{ round.team1_actual }};
+const existingTeam2Actual = {{ round.team2_actual }};
+
+let selectedActual = {
+    team1: existingTeam1Actual,
+    team2: existingTeam2Actual
+};
+
+let selectedBidNumbers = {
+    team1: parseBidNumber(existingTeam1Bid),
+    team2: parseBidNumber(existingTeam2Bid)
+};
+
+function parseBidNumber(bidString) {
+    if (bidString.endsWith('bn')) return parseInt(bidString.slice(0, -2)) || 0;
+    if (bidString.endsWith('n'))  return parseInt(bidString.slice(0, -1)) || 0;
+    if (bidString.endsWith('b'))  return parseInt(bidString.slice(0, -1)) || 0;
+    return parseInt(bidString) || 0;
+}
+
+function parseBidType(bidString) {
+    if (bidString.endsWith('bn')) return bidString === '0bn' ? 'blind_nil' : 'blind_nil';
+    if (bidString.endsWith('n'))  return 'nil';
+    if (bidString.endsWith('b'))  return 'blind';
+    return 'regular';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Highlight existing trick buttons
+    highlightTricksBtn('team1', existingTeam1Actual);
+    highlightTricksBtn('team2', existingTeam2Actual);
+
+    // Highlight existing bid numbers
+    highlightBidBtn('team1', parseBidNumber(existingTeam1Bid));
+    highlightBidBtn('team2', parseBidNumber(existingTeam2Bid));
+
+    // Check existing bid type radios
+    const t1Type = parseBidType(existingTeam1Bid);
+    const t2Type = parseBidType(existingTeam2Bid);
+    if (t1Type !== 'regular') {
+        const r = document.querySelector(`input[name="team1_bid_type"][value="${t1Type}"]`);
+        if (r) {
+            r.checked = true;
+            r.closest('label').classList.add('border-blue-500', 'bg-blue-50');
+        }
+    }
+    if (t2Type !== 'regular') {
+        const r = document.querySelector(`input[name="team2_bid_type"][value="${t2Type}"]`);
+        if (r) {
+            r.checked = true;
+            r.closest('label').classList.add('border-purple-500', 'bg-purple-50');
+        }
+    }
+
+    // Show special bid toggles
+    setupSpecialBidToggles('team1', existingTeam1Bid);
+    setupSpecialBidToggles('team2', existingTeam2Bid);
+
+    // Hook up checkbox click handlers
+    ['team1_nil_success','team1_blind_nil_success','team1_blind_success',
+     'team2_nil_success','team2_blind_nil_success','team2_blind_success'].forEach(id => {
+        const cb = document.getElementById(id);
+        if (cb) {
+            const lbl = cb.closest('label');
+            if (lbl) {
+                lbl.addEventListener('click', e => {
+                    e.preventDefault();
+                    cb.checked = !cb.checked;
+                    toggleCheckboxText(id);
+                });
+            }
+        }
+    });
+
+    checkFormValidity();
+});
+
+function setupSpecialBidToggles(team, bidString) {
+    const specialDiv = document.getElementById(`${team}_special_bids`);
+    const nilToggle = document.getElementById(`${team}_nil_toggle`);
+    const blindNilToggle = document.getElementById(`${team}_blind_nil_toggle`);
+    const blindToggle = document.getElementById(`${team}_blind_toggle`);
+
+    nilToggle.style.display = 'none';
+    blindNilToggle.style.display = 'none';
+    blindToggle.style.display = 'none';
+
+    let hasSpecial = false;
+    if (bidString.endsWith('bn')) {
+        blindNilToggle.style.display = 'block'; hasSpecial = true;
+    } else if (bidString.endsWith('n')) {
+        nilToggle.style.display = 'block'; hasSpecial = true;
+    } else if (bidString.endsWith('b')) {
+        blindToggle.style.display = 'block'; hasSpecial = true;
+    }
+    specialDiv.style.display = hasSpecial ? 'block' : 'none';
+}
+
+function selectBid(team, number, event) {
+    selectedBidNumbers[team] = number;
+    highlightBidBtn(team, number);
+    rebuildBidString(team);
+    event.stopPropagation();
+}
+
+function highlightBidBtn(team, number) {
+    const cls = team === 'team1' ? 'bid-btn-team1' : 'bid-btn-team2';
+    document.querySelectorAll(`.${cls}`).forEach(btn => {
+        btn.classList.remove('bg-blue-100','bg-purple-100','border-blue-500','border-purple-500');
+        btn.classList.add('bg-white','border-gray-300');
+    });
+    const allBtns = document.querySelectorAll(`.${cls}`);
+    if (allBtns[number]) {
+        allBtns[number].classList.remove('bg-white','border-gray-300');
+        if (team === 'team1') allBtns[number].classList.add('bg-blue-100','border-blue-500');
+        else                  allBtns[number].classList.add('bg-purple-100','border-purple-500');
+    }
+}
+
+function toggleBidType(team, bidType, event) {
+    event.preventDefault();
+    const radio = event.currentTarget.querySelector('input[type="radio"]');
+    if (radio.checked) {
+        radio.checked = false;
+    } else {
+        document.querySelectorAll(`input[name="${team}_bid_type"]`).forEach(r => r.checked = false);
+        radio.checked = true;
+    }
+    // Update label styles
+    const color = team === 'team1' ? 'blue' : 'purple';
+    document.querySelectorAll(`.bid-type-label-${team}`).forEach(l => {
+        l.classList.remove(`border-${color}-500`, `bg-${color}-50`);
+        l.classList.add('border-gray-300');
+    });
+    if (radio.checked) {
+        event.currentTarget.classList.remove('border-gray-300');
+        event.currentTarget.classList.add(`border-${color}-500`, `bg-${color}-50`);
+    }
+    rebuildBidString(team);
+}
+
+function rebuildBidString(team) {
+    const number = selectedBidNumbers[team] ?? 0;
+    const selectedType = document.querySelector(`input[name="${team}_bid_type"]:checked`)?.value || 'regular';
+    let bidString = '';
+
+    if (selectedType === 'blind_nil') {
+        bidString = number === 0 ? '0bn' : `${number}bn`;
+    } else if (selectedType === 'nil') {
+        bidString = number === 0 ? '0n' : `${number}n`;
+    } else if (selectedType === 'blind') {
+        bidString = number > 0 ? `${number}b` : '';
+    } else {
+        bidString = String(number);
+    }
+
+    document.getElementById(`${team}_bid`).value = bidString;
+
+    // Update display label
+    const displayEl = document.getElementById(`${team}_bid_display`);
+    if (displayEl && bidString) displayEl.textContent = formatBidForDisplay(bidString);
+
+    // Refresh special toggles
+    setupSpecialBidToggles(team, bidString);
+    checkFormValidity();
+}
+
+function setActual(team, value) {
+    selectedActual[team] = value;
+    document.getElementById(`${team}_actual`).value = value;
+    highlightTricksBtn(team, value);
+    highlightComplementary(team, value);
+    checkFormValidity();
+}
+
+function highlightTricksBtn(team, value) {
+    const cls = team === 'team1' ? 'tricks-btn-team1' : 'tricks-btn-team2';
+    document.querySelectorAll(`.${cls}`).forEach(btn => {
+        btn.classList.remove('bg-blue-100','bg-purple-100','border-blue-500','border-purple-500');
+        btn.classList.add('bg-white','border-gray-300');
+    });
+    const allBtns = document.querySelectorAll(`.${cls}`);
+    if (allBtns[value] !== undefined) {
+        allBtns[value].classList.remove('bg-white','border-gray-300');
+        if (team === 'team1') allBtns[value].classList.add('bg-blue-100','border-blue-500');
+        else                  allBtns[value].classList.add('bg-purple-100','border-purple-500');
+    }
+}
+
+function highlightComplementary(selectedTeam, selectedValue) {
+    const otherTeam = selectedTeam === 'team1' ? 'team2' : 'team1';
+    const complementary = 13 - selectedValue;
+    const cls = otherTeam === 'team1' ? 'tricks-btn-team1' : 'tricks-btn-team2';
+    document.querySelectorAll(`.${cls}`).forEach(btn => {
+        btn.classList.remove('bg-yellow-100','border-yellow-400','ring-2','ring-yellow-300');
+    });
+    if (selectedActual[otherTeam] === undefined || selectedActual[otherTeam] !== complementary) {
+        const allBtns = document.querySelectorAll(`.${cls}`);
+        if (allBtns[complementary]) {
+            allBtns[complementary].classList.add('bg-yellow-100','border-yellow-400','ring-2','ring-yellow-300');
+        }
+    }
+}
+
+function checkFormValidity() {
+    const t1 = selectedActual.team1;
+    const t2 = selectedActual.team2;
+    const submitBtn = document.getElementById('submitBtn');
+    const validationError = document.getElementById('validation_error');
+
+    if (t1 !== undefined && t2 !== undefined) {
+        if (t1 + t2 === 13) {
+            submitBtn.disabled = false;
+            validationError.classList.add('hidden');
+        } else {
+            submitBtn.disabled = true;
+            validationError.classList.remove('hidden');
+        }
+    } else {
+        submitBtn.disabled = false; // Allow submit with existing values
+        validationError.classList.add('hidden');
+    }
+}
+
+function toggleCheckboxText(checkboxId) {
+    const cb = document.getElementById(checkboxId);
+    if (!cb) return;
+    const lbl = cb.closest('label');
+    if (!lbl) return;
+    lbl.querySelector('.checkbox-text-unchecked')?.classList.toggle('hidden', cb.checked);
+    lbl.querySelector('.checkbox-text-checked')?.classList.toggle('hidden', !cb.checked);
+}
+
+function formatBidForDisplay(bidString) {
+    if (bidString.endsWith('bn')) {
+        const n = bidString.slice(0, -2);
+        return n === '0' ? 'Blind Nil' : `${n} (Blind Nil)`;
+    }
+    if (bidString.endsWith('n')) return `${bidString.slice(0, -1)} (Nil)`;
+    if (bidString.endsWith('b')) return `${bidString.slice(0, -1)} (Blind)`;
+    return bidString;
+}
+</script>
+{% endblock %}
