@@ -52,6 +52,26 @@ def simple_datetime_filter(date_string):
 def format_bid_display_filter(bid_string):
     return format_bid_display(bid_string)
 
+# Template filter for score+bags display (score in 10s, bags in ones digit)
+@app.template_filter('score_with_bags')
+def score_with_bags_filter(score, bags):
+    """Combine score (multiples of 10) with bags (ones digit) for display.
+    Bags appear in the ones digit. For negative scores, bags make it more negative.
+    Example: score=-40, bags=2 → display as -42 (-40 - 2)
+    Example: score=60, bags=5 → display as 65 (60 + 5)
+    """
+    if score is None:
+        score = 0
+    if bags is None:
+        bags = 0
+
+    # For negative scores, subtract bags (makes it more negative)
+    # For positive scores, add bags
+    if score < 0:
+        return score - bags
+    else:
+        return score + bags
+
 # Template global function for score breakdown
 @app.template_global()
 def get_score_breakdown_detailed_template(round_data):
@@ -396,17 +416,18 @@ def enter_scores(game_id):
         team1_bags_total += team1_bags_earned
         team2_bags_total += team2_bags_earned
         
-        # Check for bag penalties and apply them
+        # Check for bag penalties and apply them (multiple penalties if needed)
         team1_bag_penalty = 0
         team2_bag_penalty = 0
-        
-        if team1_bags_total >= game['bag_penalty_threshold']:
-            team1_bag_penalty = game['bag_penalty_points']
-            team1_bags_total = 0
-        
-        if team2_bags_total >= game['bag_penalty_threshold']:
-            team2_bag_penalty = game['bag_penalty_points']
-            team2_bags_total = 0
+
+        # Apply penalty for each complete set of bags (e.g., 23 bags = 2 penalties, 3 remaining)
+        while team1_bags_total >= game['bag_penalty_threshold']:
+            team1_bag_penalty += game['bag_penalty_points']
+            team1_bags_total -= game['bag_penalty_threshold']
+
+        while team2_bags_total >= game['bag_penalty_threshold']:
+            team2_bag_penalty += game['bag_penalty_points']
+            team2_bags_total -= game['bag_penalty_threshold']
         
         # Calculate final round points including bag penalties
         team1_points = team1_scoring['total_points'] - team1_bag_penalty

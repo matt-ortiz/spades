@@ -316,10 +316,11 @@ def calculate_detailed_round_scoring(bid_string, actual_tricks, game, nil_succes
             components['bag_points'] = actual_tricks - bid_value
         else:
             components['bid_points'] = -(bid_value * 10)
-        
+
         # Nil bonus/penalty
         components['nil_bonus'] = game['nil_penalty'] if nil_success else -game['nil_penalty']
-        components['total_points'] = components['bid_points'] + components['nil_bonus'] + components['bag_points']
+        # IMPORTANT: total_points should NOT include bag_points (tracked separately)
+        components['total_points'] = components['bid_points'] + components['nil_bonus']
         
     elif bid_type == 'combination_blind_nil':
         # Combination blind nil bid (e.g., "4bn")
@@ -329,10 +330,11 @@ def calculate_detailed_round_scoring(bid_string, actual_tricks, game, nil_succes
             components['bag_points'] = actual_tricks - bid_value
         else:
             components['bid_points'] = -(bid_value * 10)
-        
+
         # Blind nil bonus/penalty
         components['blind_nil_bonus'] = game['blind_nil_penalty'] if blind_nil_success else -game['blind_nil_penalty']
-        components['total_points'] = components['bid_points'] + components['blind_nil_bonus'] + components['bag_points']
+        # IMPORTANT: total_points should NOT include bag_points (tracked separately)
+        components['total_points'] = components['bid_points'] + components['blind_nil_bonus']
         
     elif bid_type == 'blind_nil':
         # Pure blind nil bid
@@ -350,7 +352,8 @@ def calculate_detailed_round_scoring(bid_string, actual_tricks, game, nil_succes
             # Failed blind bid: show as blind penalty only
             components['bid_points'] = 0
             components['blind_bonus'] = -(bid_value * 10 * 2)
-        components['total_points'] = components['bid_points'] + components['blind_bonus'] + components['bag_points']
+        # IMPORTANT: total_points should NOT include bag_points (tracked separately)
+        components['total_points'] = components['bid_points'] + components['blind_bonus']
         
     else:  # 'regular'
         # Standard bid
@@ -359,6 +362,8 @@ def calculate_detailed_round_scoring(bid_string, actual_tricks, game, nil_succes
             components['bag_points'] = actual_tricks - bid_value
         else:
             components['bid_points'] = -(bid_value * 10)
-        components['total_points'] = components['bid_points'] + components['bag_points']
+        # IMPORTANT: total_points should NOT include bag_points
+        # Bags are tracked separately and displayed in the ones digit
+        components['total_points'] = components['bid_points']
     
     return components

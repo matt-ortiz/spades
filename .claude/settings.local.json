@@ -5,7 +5,8 @@
       "Bash(source:*)",
       "Bash(python:*)",
       "Bash(sed:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(python3:*)"
     ],
     "deny": []
   }

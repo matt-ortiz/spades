@@ -4,7 +4,7 @@
     <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center border border-blue-200">
             <div class="text-sm font-medium text-blue-800 mb-2">{{ game.team1_player1 }} & {{ game.team1_player2 }}</div>
-            <div class="text-3xl font-bold text-blue-900">{{ game.team1_final_score }}</div>
+            <div class="text-3xl font-bold text-blue-900">{{ game.team1_final_score | score_with_bags(game.team1_bags) }}</div>
             {% if game.team1_final_score < 500 %}
             <div class="text-xs text-yellow-600 mt-1">Pts to win: +{{ game.max_score - game.team1_final_score }}</div>
             {% endif %}
@@ -12,7 +12,7 @@
         </div>
         <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center border border-purple-200">
             <div class="text-sm font-medium text-purple-800 mb-2">{{ game.team2_player1 }} & {{ game.team2_player2 }}</div>
-            <div class="text-3xl font-bold text-purple-900">{{ game.team2_final_score }}</div>
+            <div class="text-3xl font-bold text-purple-900">{{ game.team2_final_score | score_with_bags(game.team2_bags) }}</div>
             {% if game.team2_final_score < 500 %}
             <div class="text-xs text-yellow-600 mt-1">Pts to win: +{{ game.max_score - game.team2_final_score }}</div>
             {% endif %}
