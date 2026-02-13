@@ -106,12 +106,20 @@ def dashboard():
         WHERE created_by_user_id = ? AND status = 'completed'
         ORDER BY completed_date DESC LIMIT 5
     ''', (session['user_id'],)).fetchall()
+
+    # Get abandoned games
+    abandoned_games = conn.execute('''
+        SELECT * FROM games
+        WHERE created_by_user_id = ? AND status = 'abandoned'
+        ORDER BY created_date DESC
+    ''', (session['user_id'],)).fetchall()
     
     conn.close()
     
     return render_template('dashboard.html', 
                          active_games=active_games, 
-                         completed_games=completed_games)
+                         completed_games=completed_games,
+                         abandoned_games=abandoned_games)
 
 # Registration route removed - users are created automatically on first login
 
@@ -540,6 +548,93 @@ def edit_bids(game_id, round_id):
     
     conn.close()
     return render_template('edit_bids.html', game=game, round=round_data)
+
+@app.route('/game/<int:game_id>/abandon', methods=['POST'])
+@require_login
+def abandon_game(game_id):
+    conn = get_db_connection()
+    game = conn.execute('SELECT * FROM games WHERE id = ? AND created_by_user_id = ?',
+                        (game_id, session['user_id'])).fetchone()
+    if not game:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    conn.execute("UPDATE games SET status = 'abandoned' WHERE id = ?", (game_id,))
+    conn.commit()
+    conn.close()
+
+    flash('Game abandoned.')
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/game/<int:game_id>/recover', methods=['POST'])
+@require_login
+def recover_game(game_id):
+    conn = get_db_connection()
+    game = conn.execute('SELECT * FROM games WHERE id = ? AND created_by_user_id = ?',
+                        (game_id, session['user_id'])).fetchone()
+    if not game:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    conn.execute("UPDATE games SET status = 'active' WHERE id = ?", (game_id,))
+    conn.commit()
+    conn.close()
+
+    flash('Game restored to active.')
+    return redirect(url_for('game', game_id=game_id))
+
+
+@app.route('/game/<int:game_id>/delete', methods=['POST'])
+@require_login
+def delete_game(game_id):
+    conn = get_db_connection()
+    game = conn.execute('SELECT * FROM games WHERE id = ? AND created_by_user_id = ?',
+                        (game_id, session['user_id'])).fetchone()
+    if not game:
+        flash('Game not found')
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    conn.execute('DELETE FROM rounds WHERE game_id = ?', (game_id,))
+    conn.execute('DELETE FROM games WHERE id = ?', (game_id,))
+    conn.commit()
+    conn.close()
+
+    flash('Game permanently deleted.')
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/games/bulk-abandon', methods=['POST'])
+@require_login
+def bulk_abandon_old_games():
+    days = int(request.form.get('days', 30))
+    cutoff = datetime.now() - timedelta(days=days)
+
+    conn = get_db_connection()
+    # Abandon active games with no round activity since the cutoff
+    result = conn.execute('''
+        UPDATE games
+        SET status = 'abandoned'
+        WHERE created_by_user_id = ?
+          AND status = 'active'
+          AND id NOT IN (
+              SELECT DISTINCT game_id FROM rounds
+              WHERE created_date >= ?
+          )
+          AND created_date < ?
+    ''', (session['user_id'], cutoff, cutoff))
+
+    abandoned_count = result.rowcount
+    conn.commit()
+    conn.close()
+
+    flash('Abandoned {} stale game{} (no activity in {} days).'.format(
+        abandoned_count, 's' if abandoned_count != 1 else '', days))
+    return redirect(url_for('dashboard'))
+
 
 @app.route('/game/<int:game_id>/edit', methods=['GET', 'POST'])
 @require_login

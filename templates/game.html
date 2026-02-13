@@ -408,6 +408,35 @@ function showCopySuccess() {
     </div>
 </div>
 
+{% if game.status != 'completed' and game.status != 'abandoned' %}
+<div class="mt-6 text-center">
+    <button onclick="document.getElementById('abandonModal').classList.remove('hidden')" 
+            class="text-sm text-gray-400 hover:text-red-500 underline transition-colors">
+        Abandon this game
+    </button>
+</div>
+
+<!-- Abandon confirmation modal -->
+<div id="abandonModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Abandon this game?</h3>
+        <p class="text-sm text-gray-600 mb-6">The game will be hidden from your active list. Round history is preserved and you can still view it later.</p>
+        <div class="flex gap-3">
+            <button onclick="document.getElementById('abandonModal').classList.add('hidden')"
+                    class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                Cancel
+            </button>
+            <form method="POST" action="{{ url_for('abandon_game', game_id=game.id) }}" class="flex-1">
+                <button type="submit"
+                        class="w-full bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors">
+                    Yes, Abandon
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="text-center mt-6">
     <a href="{{ url_for('dashboard') }}" class="bg-spades-secondary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors btn-animate">
         ← Back to Dashboard
