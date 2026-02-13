@@ -155,6 +155,97 @@
             </div>
         </div>
     </div>
+    {% elif game.status == 'abandoned' %}
+    <div class="bg-gray-50 rounded-lg border border-gray-300 p-6">
+        <div class="text-center mb-4">
+            <h2 class="text-2xl font-bold text-gray-600 mb-2">🚩 Game Abandoned</h2>
+            <p class="text-gray-500 text-sm">This game was abandoned before it could be completed.</p>
+        </div>
+
+        <!-- Snapshot stats -->
+        {% set total_rounds = completed_rounds | length %}
+        {% set team1_wins = [] %}
+        {% set team2_wins = [] %}
+        {% set team1_positive = [] %}
+        {% set team2_positive = [] %}
+        {% set team1_negative = [] %}
+        {% set team2_negative = [] %}
+        {% for round in completed_rounds %}
+            {% if round.team1_points|int > round.team2_points|int %}{% set _ = team1_wins.append(round) %}{% elif round.team2_points|int > round.team1_points|int %}{% set _ = team2_wins.append(round) %}{% endif %}
+            {% if round.team1_points|int > 0 %}{% set _ = team1_positive.append(round.team1_points|int) %}{% elif round.team1_points|int < 0 %}{% set _ = team1_negative.append(round.team1_points|int) %}{% endif %}
+            {% if round.team2_points|int > 0 %}{% set _ = team2_positive.append(round.team2_points|int) %}{% elif round.team2_points|int < 0 %}{% set _ = team2_negative.append(round.team2_points|int) %}{% endif %}
+        {% endfor %}
+
+        {% if total_rounds > 0 %}
+        <div class="space-y-4">
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                <h4 class="font-semibold text-gray-600 mb-3">📊 Snapshot at Abandonment</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Rounds Played:</span>
+                        <span class="font-medium">{{ total_rounds }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Score Gap:</span>
+                        <span class="font-medium">{{ (game.team1_final_score - game.team2_final_score) | abs }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                <h4 class="font-semibold text-gray-600 mb-3">🎯 Where Things Stood</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div class="space-y-1">
+                        <div class="font-medium text-blue-700">{{ game.team1_player1 }}/{{ game.team1_player2 }}</div>
+                        <div class="flex justify-between"><span>Rounds Won:</span><span class="font-medium text-blue-600">{{ team1_wins|length }}</span></div>
+                        <div class="flex justify-between"><span>Points Earned:</span><span class="font-medium text-green-600">+{{ team1_positive|sum }}</span></div>
+                        {% if team1_negative|sum < 0 %}<div class="flex justify-between"><span>Points Lost:</span><span class="font-medium text-red-500">{{ team1_negative|sum }}</span></div>{% endif %}
+                    </div>
+                    <div class="space-y-1">
+                        <div class="font-medium text-purple-700">{{ game.team2_player1 }}/{{ game.team2_player2 }}</div>
+                        <div class="flex justify-between"><span>Rounds Won:</span><span class="font-medium text-purple-600">{{ team2_wins|length }}</span></div>
+                        <div class="flex justify-between"><span>Points Earned:</span><span class="font-medium text-green-600">+{{ team2_positive|sum }}</span></div>
+                        {% if team2_negative|sum < 0 %}<div class="flex justify-between"><span>Points Lost:</span><span class="font-medium text-red-500">{{ team2_negative|sum }}</span></div>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-center text-gray-400 text-sm mt-4">No rounds were played before this game was abandoned.</p>
+        {% endif %}
+
+        <!-- Recover / Delete actions -->
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+            <form method="POST" action="{{ url_for('recover_game', game_id=game.id) }}" class="flex-1">
+                <button type="submit" class="w-full bg-spades-success text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors">
+                    ↩️ Recover Game
+                </button>
+            </form>
+            <button onclick="document.getElementById('deleteModal').classList.remove('hidden')"
+                    class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors">
+                🗑️ Delete Game
+            </button>
+        </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Permanently delete this game?</h3>
+            <p class="text-sm text-gray-600 mb-6">All rounds and score history will be erased. This cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('deleteModal').classList.add('hidden')"
+                        class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                    Cancel
+                </button>
+                <form method="POST" action="{{ url_for('delete_game', game_id=game.id) }}" class="flex-1">
+                    <button type="submit" class="w-full bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors">
+                        Yes, Delete Forever
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     {% else %}
     <div class="text-center">
         <!-- Check if there's a pending round (bids entered but no scores) -->
